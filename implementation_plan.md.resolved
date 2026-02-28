@@ -1,0 +1,129 @@
+# Canvas Page — Full Implementation Plan
+
+A full-screen product workspace at `/canvas`, built on React Flow. All layout regions are fixed — only the React Flow viewport pans/zooms.
+
+## File Structure
+
+```
+src/app/canvas/
+  └── page.tsx                    # Route entry, ReactFlowProvider wrapper
+
+src/components/canvas/
+  ├── CanvasPage.tsx              # Main layout orchestrator
+  ├── toolbar/
+  │   └── Toolbar.tsx             # Top 64px bar (breadcrumb, modes, avatars, AI btn)
+  ├── sidebar/
+  │   ├── LeftSidebar.tsx         # 240px left panel container
+  │   ├── NodePalette.tsx         # Draggable node type grid
+  │   └── LayersPanel.tsx         # Layer list with visibility/lock
+  ├── canvas/
+  │   ├── CanvasArea.tsx          # React Flow mount + background overlay
+  │   ├── nodes/
+  │   │   └── ArchNode.tsx        # Custom node component (all types)
+  │   ├── edges/
+  │   │   ├── ArchEdge.tsx        # dataFlow edge (animated dot)
+  │   │   ├── DependencyEdge.tsx  # dashed edge
+  │   │   └── CriticalEdge.tsx    # gradient glow edge
+  │   ├── FloatingToolbar.tsx     # Selection action buttons above node
+  │   └── ContextMenu.tsx         # Right-click menu
+  ├── inspector/
+  │   └── RightPanel.tsx          # 280px node inspector (5 sections)
+  ├── bottombar/
+  │   └── BottomBar.tsx           # Zoom controls, minimap, node count
+  └── modals/
+      └── AIGenerateModal.tsx     # Generate architecture modal
+
+src/store/
+  └── canvasStore.ts              # Zustand store (nodes, edges, selection, panels)
+```
+
+---
+
+## Key State (Zustand)
+
+```ts
+// canvasStore.ts
+nodes, edges                    // React Flow node/edge arrays
+selectedNodeId                  // drives right panel open/close
+rightPanelOpen                  // derived from selection
+activeMode: 'design'|'review'|'export'
+isSaving, lastSaved
+isGenerateModalOpen
+contextMenu: { x, y, type, nodeId } | null
+```
+
+---
+
+## Proposed Changes
+
+### Route
+
+#### [NEW] [page.tsx](file:///c:/PROJECTS/doc2product/frontend/src/app/canvas/page.tsx)
+Wraps everything in `ReactFlowProvider`. Renders `<CanvasPage />`.
+
+---
+
+### Canvas Components
+
+#### [NEW] [CanvasPage.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/CanvasPage.tsx)
+Fixed-layout shell: Toolbar at top, LeftSidebar + CanvasArea + RightPanel in middle, BottomBar at bottom. Manages context menu dismiss on click.
+
+#### [NEW] [Toolbar.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/toolbar/Toolbar.tsx)
+Three-zone flex layout. Includes: back arrow, editable breadcrumb, unsaved indicator, mode switcher, collaborator avatars, share/generate buttons, save status.
+
+#### [NEW] [LeftSidebar.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/sidebar/LeftSidebar.tsx)
+Container for NodePalette + LayersPanel stacked vertically.
+
+#### [NEW] [NodePalette.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/sidebar/NodePalette.tsx)
+2-column draggable grid of 9 node type cards. Uses HTML5 drag API (`onDragStart` sets `dragData`) so React Flow's `onDrop` can create nodes.
+
+#### [NEW] [LayersPanel.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/sidebar/LayersPanel.tsx)
+Scrollable layer list. Derives from `nodes` in store. Groups, visibility toggle, selection highlight.
+
+#### [NEW] [CanvasArea.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/canvas/CanvasArea.tsx)
+React Flow instance with: custom nodeTypes, edgeTypes, Background, MiniMap (hidden — minimap is in BottomBar). Handles `onDrop`, `onConnect`, `onNodeClick`, `onPaneClick`, `onContextMenu`, `onNodeDragStop`. Renders `<EmptyState />` when nodes.length === 0.
+
+#### [NEW] [ArchNode.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/canvas/nodes/ArchNode.tsx)
+Single custom node component used for all 9 types. Color/icon driven by `data.type`. Includes: left accent stripe, icon, label, owner avatar, handles (visible on hover), ambient pulse animation.
+
+#### [NEW] [ArchEdge.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/canvas/edges/ArchEdge.tsx)
+Default edge with animated SVG dot following path via `animateMotion`.
+
+#### [NEW] [DependencyEdge.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/canvas/edges/DependencyEdge.tsx)
+Dashed grey edge, no animation.
+
+#### [NEW] [CriticalEdge.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/canvas/edges/CriticalEdge.tsx)
+Gradient stroke, fast dot, glow trail underneath.
+
+#### [NEW] [FloatingToolbar.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/canvas/FloatingToolbar.tsx)
+Appears above selected node. Edit, assign, connect, duplicate, delete actions.
+
+#### [NEW] [ContextMenu.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/canvas/ContextMenu.tsx)
+Glass dropdown at cursor position. Different items for empty canvas vs node right-click.
+
+#### [NEW] [RightPanel.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/inspector/RightPanel.tsx)
+Slides in from right on node selection. 5 collapsible sections: Details, Ownership, Dependencies, Tech Stack, Metadata.
+
+#### [NEW] [BottomBar.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/bottombar/BottomBar.tsx)
+Zoom controls (- / % / +), fit-view, lock. Inline minimap (160×32px). Node/edge count, connection status, shortcuts button.
+
+#### [NEW] [AIGenerateModal.tsx](file:///c:/PROJECTS/doc2product/frontend/src/components/canvas/modals/AIGenerateModal.tsx)
+Overlay modal with textarea, option toggles, Generate button. On submit: mock generates sample nodes with stagger animation.
+
+---
+
+### Store
+
+#### [NEW] [canvasStore.ts](file:///c:/PROJECTS/doc2product/frontend/src/store/canvasStore.ts)
+Zustand store. `useCanvasStore()` used across all canvas components.
+
+---
+
+## Verification Plan
+
+- Navigate to `/canvas` → full-screen layout renders with no scrollbars
+- Drag a node type from left palette → node appears on canvas
+- Click a node → right inspector panel slides in
+- Right-click canvas → context menu appears
+- Click "Generate" → modal opens; submit → mock nodes appear with stagger
+- Zoom controls in bottom bar adjust canvas viewport
