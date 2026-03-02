@@ -260,10 +260,10 @@ export default function CanvasArea() {
                 fitViewOptions={{ padding: 0.12 }}
             >
                 <Background
-                    variant={BackgroundVariant.Dots}
-                    gap={32}
-                    size={2}
-                    color="#2c336c"
+                    variant={BackgroundVariant.Lines}
+                    gap={40}
+                    lineWidth={1}
+                    color="rgba(44, 51, 108, 0.2)"
                 />
             </ReactFlow>
 

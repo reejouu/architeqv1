@@ -22,8 +22,8 @@ export default function CollaborationSection() {
                     </div>
 
                     <div className="absolute inset-0 p-12">
-                        <div className="absolute top-[30%] left-[20%] w-[110px] h-[40px] bg-[#bfb3ca] border-[3px] border-[#2c336c] flex items-center justify-center text-xs font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c]">Auth Service</div>
-                        <div className="absolute top-[60%] left-[60%] w-[110px] h-[40px] bg-[#ddb9ac] border-[3px] border-[#2c336c] flex items-center justify-center text-xs font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c]">User DB</div>
+                        <div className="absolute top-[30%] left-[20%] w-[110px] h-[40px] bg-[#bfb3ca] rounded-full border-[3px] border-[#2c336c] flex items-center justify-center text-xs font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c]">Auth Service</div>
+                        <div className="absolute top-[60%] left-[60%] w-[110px] h-[40px] bg-[#ddb9ac] rounded-full border-[3px] border-[#2c336c] flex items-center justify-center text-xs font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c]">User DB</div>
                         <div className="absolute top-[50%] left-[40%] text-[#2c336c] transition-colors duration-500">
                             {/* Cursor 1 */}
                             <div className="absolute animate-[moveCursor1_6s_ease-in-out_infinite]">
