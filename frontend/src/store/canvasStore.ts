@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { Node, Edge } from "@xyflow/react";
-import { SAMPLE_NODES, SAMPLE_EDGES } from "@/lib/canvasConstants";
-import { transformGraph, type RawGraph } from "@/lib/graphTransform";
+import { SAMPLE_NODES, SAMPLE_EDGES } from "@/lib/constants/canvasConstants";
+import { transformGraph, type RawGraph } from "@/lib/graph/graphTransform";
 
 type SaveStatus = "idle" | "saving" | "saved";
 type ActiveMode = "design" | "review" | "export";
@@ -22,6 +22,8 @@ interface CanvasState {
     activeMode: ActiveMode;
     saveStatus: SaveStatus;
     isGenerateModalOpen: boolean;
+    isGenerating: boolean;
+    generatingMessage: string;
     contextMenu: ContextMenu | null;
     projectName: string;
     hasUnsavedChanges: boolean;
@@ -36,6 +38,7 @@ interface CanvasState {
     setSaveStatus: (status: SaveStatus) => void;
     openGenerateModal: () => void;
     closeGenerateModal: () => void;
+    setIsGenerating: (isGenerating: boolean, message?: string) => void;
     setContextMenu: (menu: ContextMenu | null) => void;
     setProjectName: (name: string) => void;
     setSidebarOpen: (open: boolean) => void;
@@ -53,6 +56,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     activeMode: "design",
     saveStatus: "idle",
     isGenerateModalOpen: false,
+    isGenerating: false,
+    generatingMessage: "",
     contextMenu: null,
     projectName: "Doctor Booking App",
     hasUnsavedChanges: false,
@@ -76,6 +81,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
     openGenerateModal: () => set({ isGenerateModalOpen: true }),
     closeGenerateModal: () => set({ isGenerateModalOpen: false }),
+
+    setIsGenerating: (isGenerating, message = "") => set({ isGenerating, generatingMessage: message }),
 
     setContextMenu: (menu) => set({ contextMenu: menu }),
 

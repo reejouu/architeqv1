@@ -1,5 +1,7 @@
 import type { Node, Edge } from "@xyflow/react";
-import { getLayoutedElements, getLayeredElements, getColumnLayeredElements } from "./layout";
+import { MarkerType } from "@xyflow/react";
+import { getLayoutedElements } from "./layout";
+import { computeLayout, type InputNode, type InputEdge } from "./engine";
 
 // ─── AI Agent JSON schema ─────────────────────────────────────────────────────
 
@@ -29,8 +31,13 @@ export interface RawEdge {
 }
 
 export interface RawGraph {
+    idea?: string;
     nodes: RawNode[];
     edges: RawEdge[];
+    risks?: string[];
+    ownership?: Array<{ module: string, owner: string }>;
+    groups?: Record<string, string[]>;
+    priority?: Record<string, number>;
 }
 
 // ─── Type → visual style mapping ─────────────────────────────────────────────
@@ -66,89 +73,162 @@ export const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
     "Blocked": { color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
 };
 
+
 // ─── Transform ────────────────────────────────────────────────────────────────
 
 /**
  * Converts raw AI agent JSON → laid-out React Flow nodes + edges.
  *
- * Usage:
- *   const { nodes, edges } = transformGraph(rawJson);
- *   useCanvasStore.getState().loadGraph(rawJson);  // or use store action
+ * When nodes have layer+column data, uses the advanced position engine
+ * with barycenter crossing reduction and fan-out edge separation.
+ *
+ * Falls back to Dagre for nodes without spatial metadata.
  */
 export function transformGraph(
     raw: RawGraph,
     direction: "TB" | "LR" = "TB"
 ): { nodes: Node[]; edges: Edge[] } {
-    const rfNodes: Node[] = raw.nodes.map((n) => ({
+
+    // ── Pre-process raw nodes to inject global data ──
+    const enrichedNodes = raw.nodes.map(n => {
+        // Map ownership
+        const ownerShipEntry = raw.ownership?.find(o => o.module === n.id);
+        const owner = ownerShipEntry ? ownerShipEntry.owner : n.owner;
+
+        // Map group
+        let group = n.group;
+        if (!group && raw.groups) {
+            for (const [groupName, groupNodes] of Object.entries(raw.groups)) {
+                if (groupNodes.includes(n.id)) {
+                    group = groupName;
+                    break;
+                }
+            }
+        }
+
+        // Map priority (you can store this in order if order is missing, or a new field)
+        const priorityScore = raw.priority?.[n.id];
+        const status = n.status || (priorityScore === 1 ? "In Progress" : "Not Started");
+
+        return {
+            ...n,
+            owner,
+            group,
+            status,
+            priorityScore
+        };
+    });
+
+    const hasLayers = enrichedNodes.every(n => typeof n.layer === "number");
+
+    // ── Fast path: use position engine when layer data is available ──
+    if (hasLayers) {
+        const inputNodes: InputNode[] = enrichedNodes.map(n => ({
+            id: n.id,
+            label: n.label,
+            type: (n.type || "default").toLowerCase(),
+            layer: n.layer ?? 0,
+            column: n.column ?? 0,
+            owner: n.owner,
+            status: n.status,
+            description: n.description,
+            group: n.group,
+            category: n.category,
+            handles: n.handles,
+            order: n.order,
+        }));
+
+        const inputEdges: InputEdge[] = raw.edges.map(e => ({
+            from: e.from,
+            to: e.to,
+            label: e.label,
+            type: e.type,
+            lane: e.lane,
+        }));
+
+        const layout = computeLayout(inputNodes, inputEdges);
+
+        // Convert to React Flow format
+        const rfNodes: Node[] = layout.nodes.map(n => ({
+            id: n.id,
+            type: "archNode",
+            position: n.position,
+            data: {
+                label: n.data.label || "",
+                nodeType: n.data.type || "default",
+                owner: n.data.owner || "",
+                status: n.data.status || "",
+                description: n.data.description || "",
+                layer: n.data.layer,
+                column: n.data.column,
+                order: n.data.order,
+                group: n.data.group || "",
+                category: n.data.category || "",
+                handles: n.data.handles || ["top", "right", "bottom", "left"],
+                priorityScore: (n as any).priorityScore, // if needed by ArchNode
+            },
+        }));
+
+        const rfEdges: Edge[] = layout.edges.map(le => {
+            return {
+                id: le.id,
+                source: le.source,
+                target: le.target,
+                sourceHandle: "bottom",
+                targetHandle: "top",
+                type: le.type === "smoothstep" ? "smoothstep" : "smoothstep",
+                style: le.style,
+                markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" },
+                pathOptions: {
+                    offset: 20 + Math.abs(le.data.parallelOffset || 0),
+                    borderRadius: 12,
+                },
+                data: {
+                    exitPoint: le.data.exitPoint,
+                    entryPoint: le.data.entryPoint,
+                    waypoints: le.data.waypoints,
+                    parallelOffset: le.data.parallelOffset,
+                },
+            };
+        });
+
+        return { nodes: rfNodes, edges: rfEdges };
+    }
+
+    // ── Fallback: Dagre layout for nodes without layer/column ──
+    const rfNodes: Node[] = enrichedNodes.map((n) => ({
         id: n.id,
         type: "archNode",
-        position: { x: 0, y: 0 },  // layout function will override
+        position: { x: 0, y: 0 },
         data: {
             label: n.label,
             nodeType: (n.type || "default").toLowerCase(),
             owner: n.owner || "",
             status: n.status || "",
             description: n.description || "",
-            // spatial metadata passed through to layout
             layer: typeof n.layer === "number" ? n.layer : undefined,
             column: typeof n.column === "number" ? n.column : undefined,
             order: typeof n.order === "number" ? n.order : undefined,
             group: n.group || "",
             category: n.category || "",
             handles: n.handles || ["top", "right", "bottom", "left"],
+            priorityScore: (n as any).priorityScore,
         },
     }));
 
-    const rfEdges: Edge[] = raw.edges.map((e, i) => {
-        let sourceHandle = e.sourceHandle;
-        let targetHandle = e.targetHandle;
+    const rfEdges: Edge[] = raw.edges.map((e, i) => ({
+        id: `e${i}-${e.from}-${e.to}`,
+        source: e.from,
+        target: e.to,
+        type: "smoothstep",
+        label: e.label,
+        style: { stroke: "#636798", strokeWidth: 1.5 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" },
+        data: {
+            lane: typeof e.lane === "number" ? e.lane : 0,
+        },
+    }));
 
-        if (!sourceHandle || !targetHandle) {
-            const sn = raw.nodes.find(n => n.id === e.from);
-            const tn = raw.nodes.find(n => n.id === e.to);
-            if (sn && tn) {
-                const sCol = sn.column ?? 0;
-                const tCol = tn.column ?? 0;
-                const sLay = sn.layer ?? 0;
-                const tLay = tn.layer ?? 0;
-
-                if (tCol > sCol) {
-                    sourceHandle = sourceHandle || "right";
-                    targetHandle = targetHandle || "left";
-                } else if (tCol < sCol) {
-                    sourceHandle = sourceHandle || "left";
-                    targetHandle = targetHandle || "right";
-                } else if (tLay > sLay) {
-                    sourceHandle = sourceHandle || "bottom";
-                    targetHandle = targetHandle || "top";
-                } else {
-                    sourceHandle = sourceHandle || "top";
-                    targetHandle = targetHandle || "bottom";
-                }
-            }
-        }
-
-        return {
-            id: `e${i}-${e.from}-${e.to}`,
-            source: e.from,
-            target: e.to,
-            type: e.type === "critical" ? "criticalEdge"
-                : e.type === "dependency" ? "dependencyEdge"
-                    : "archEdge",
-            sourceHandle,
-            targetHandle,
-            label: e.label,
-            data: {
-                lane: typeof e.lane === "number" ? e.lane : 0,
-            },
-        };
-    });
-
-    // Auto-detect layout strategy (priority: column > layer > dagre)
-    const hasColumns = raw.nodes.every(n => typeof n.column === "number");
-    const hasLayers = raw.nodes.every(n => typeof n.layer === "number");
-
-    if (hasColumns && hasLayers) return getColumnLayeredElements(rfNodes, rfEdges);
-    if (hasLayers) return getLayeredElements(rfNodes, rfEdges);
     return getLayoutedElements(rfNodes, rfEdges, direction);
 }
+

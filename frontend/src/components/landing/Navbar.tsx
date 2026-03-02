@@ -1,25 +1,29 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Navbar() {
     return (
-        <nav className="sticky top-0 h-16 bg-[rgba(10,10,15,0.85)] mix-blend-normal backdrop-blur-md border-b border-[rgba(139,92,246,0.1)] z-50 flex items-center justify-between px-6 lg:px-20">
-            <div className="flex items-center gap-2">
-                <div className="w-5 h-5 border-[1.5px] border-accentPurple rounded flex items-center justify-center shadow-[0_0_8px_rgba(139,92,246,0.4)]">
-                    <div className="w-1.5 h-1.5 bg-accentPurple rounded-full"></div>
+        <nav className="sticky top-0 h-20 bg-[#bf979e] border-b-[4px] border-borderBase z-50 flex items-center justify-between px-6 lg:px-20 transition-all">
+            <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-accentPurple border-[3px] border-[#2c336c] flex items-center justify-center shadow-[2px_2px_0px_#2c336c]">
+                    <div className="w-2.5 h-2.5 bg-[#2c336c] rounded-full"></div>
                 </div>
-                <span className="font-semibold text-lg text-white">Architeq</span>
+                <span className="font-extrabold text-[#2c336c] text-xl uppercase tracking-wider">Architeq</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
-                <a href="#" className="text-sm text-textSecondary hover:text-white transition-colors">Product</a>
-                <a href="#" className="text-sm text-textSecondary hover:text-white transition-colors">How it works</a>
-                <a href="#" className="text-sm text-textSecondary hover:text-white transition-colors">Use cases</a>
-                <a href="#" className="text-sm text-textSecondary hover:text-white transition-colors">Pricing</a>
+                <a href="#" className="font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">Product</a>
+                <a href="#" className="font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">How it works</a>
+                <a href="#" className="font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">Use cases</a>
+                <a href="#" className="font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">Pricing</a>
             </div>
-            <div className="flex items-center gap-4">
-                <a href="#" className="hidden md:block text-sm text-textSecondary hover:text-white transition-colors">Log in</a>
-                <button className="h-9 px-4 rounded-full bg-gradient-primary text-sm font-medium text-white hover:opacity-90 transition-opacity">
-                    Get started
-                </button>
+            <div className="flex items-center gap-6">
+                <a href="#" className="hidden md:block font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">Log in</a>
+                <Link href="/canvas">
+                    <button className="pill-primary h-12">
+                        Build Free
+                    </button>
+                </Link>
             </div>
         </nav>
     );

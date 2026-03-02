@@ -1,7 +1,7 @@
 "use client";
 
 import { useCanvasStore } from "@/store/canvasStore";
-import { NODE_TYPES_CONFIG } from "@/lib/canvasConstants";
+import { NODE_TYPES_CONFIG } from "@/lib/constants/canvasConstants";
 
 export default function LayersPanel() {
     const { nodes, selectedNodeId, selectNode } = useCanvasStore();

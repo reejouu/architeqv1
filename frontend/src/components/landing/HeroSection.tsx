@@ -1,26 +1,30 @@
 "use client";
 
+import Link from "next/link";
+
 export default function HeroSection() {
     return (
         <section className="relative min-h-[calc(100vh-64px)] flex items-center max-w-[1280px] mx-auto px-6 lg:px-20 py-20 lg:py-0">
             <div className="flex flex-col lg:flex-row items-center w-full gap-16">
                 <div className="w-full lg:w-1/2 flex flex-col items-start reveal" style={{ transitionDelay: '100ms' }}>
-                    <span className="eyebrow-label mb-4">AI Architecture Platform</span>
-                    <h1 className="text-5xl lg:text-[72px] font-semibold leading-[1.05] tracking-tight mb-6 text-white outline-none">
+                    <span className="eyebrow-label mb-6 text-[#2c336c]">AI Architecture Platform</span>
+                    <h1 className="text-5xl lg:text-[72px] font-black leading-[1.05] tracking-tight mb-6 text-[#f3f3f2] outline-none">
                         Design your system <i className="text-gradient not-italic">before</i> you build it
                     </h1>
-                    <p className="text-xl font-light text-textSecondary max-w-[420px] mb-10">
+                    <p className="text-xl font-bold text-[#bfb3ca] max-w-[420px] mb-10 border-l-4 border-accentPurple pl-4">
                         Turn ideas into visual, build-ready architecture
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                        <button className="pill-primary">
-                            Generate Architecture <span className="ml-2">→</span>
-                        </button>
+                        <Link href="/canvas">
+                            <button className="pill-primary">
+                                Generate Architecture <span className="ml-2">→</span>
+                            </button>
+                        </Link>
                         <button className="pill-ghost">
                             View Demo
                         </button>
                     </div>
-                    <div className="flex items-center gap-3 text-[13px] text-textMuted">
+                    <div className="flex items-center gap-3 text-[13px] text-[#bfb3ca] font-bold">
                         <span>500+ teams</span>
                         <span>&middot;</span>
                         <span>10k+ systems generated</span>
@@ -30,18 +34,17 @@ export default function HeroSection() {
                 </div>
 
                 <div className="w-full lg:w-1/2 flex justify-center lg:justify-end reveal" style={{ transitionDelay: '300ms' }}>
-                    <div className="relative w-full max-w-[600px] h-[400px] lg:h-[500px] animate-[floating_4s_ease-in-out_infinite]">
-                        <div className="absolute inset-0 bg-gradient-glow pointer-events-none" />
+                    <div className="relative w-full max-w-[600px] h-[400px] lg:h-[500px] bg-[#bf979e] border-4 border-[#2c336c] shadow-[12px_12px_0px_0px_#2c336c] animate-[floating_4s_ease-in-out_infinite]">
 
-                        <svg width="100%" height="100%" viewBox="0 0 600 500" className="overflow-visible">
+                        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 overflow-visible">
                             <style>
                                 {`
                   .edge-anim {
-                    stroke-dasharray: 8 8;
+                    stroke-dasharray: 2 2;
                     animation: dash 20s linear infinite;
                   }
                   @keyframes dash {
-                    to { stroke-dashoffset: -400; }
+                    to { stroke-dashoffset: -100; }
                   }
                   @keyframes floating {
                     0%, 100% { transform: translateY(0); }
@@ -49,33 +52,33 @@ export default function HeroSection() {
                   }
                 `}
                             </style>
-                            <path d="M120 120 C 300 120, 300 250, 300 250" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeOpacity="0.6" className="edge-anim" />
-                            <path d="M300 250 C 300 250, 500 200, 500 200" fill="none" stroke="#3B82F6" strokeWidth="2" strokeOpacity="0.6" className="edge-anim" />
-                            <path d="M300 250 C 300 250, 500 400, 500 400" fill="none" stroke="#3B82F6" strokeWidth="2" strokeOpacity="0.6" className="edge-anim" />
-                            <path d="M300 250 C 300 400, 300 400, 300 400" fill="none" stroke="#3B82F6" strokeWidth="2" strokeOpacity="0.6" className="edge-anim" />
+                            <path d="M-10 24 C 50 24, 50 50, 50 50" fill="none" stroke="#2c336c" strokeWidth="0.8" className="edge-anim" />
+                            <path d="M50 50 C 50 50, 83 40, 83 40" fill="none" stroke="#2c336c" strokeWidth="0.8" className="edge-anim" />
+                            <path d="M50 50 C 50 50, 83 80, 83 80" fill="none" stroke="#2c336c" strokeWidth="0.8" className="edge-anim" />
+                            <path d="M50 50 C 50 80, 50 80, 50 80" fill="none" stroke="#2c336c" strokeWidth="0.8" className="edge-anim" />
                         </svg>
 
                         {/* HTML Nodes overlay */}
-                        <div className="absolute top-[102px] left-[52px] w-[96px] h-[36px] bg-[rgba(20,20,40,0.9)] border-[1.5px] border-nodeAuth rounded-lg flex items-center justify-center text-[13px] font-medium text-[#F4F4F8] shadow-[0_0_12px_rgba(139,92,246,0.3)] hover:scale-105 hover:drop-shadow-[0_0_10px_#8B5CF6] transition-all cursor-pointer">
+                        <div className="absolute top-[24%] left-[20%] -translate-x-1/2 -translate-y-1/2 w-[90px] h-[32px] md:w-[96px] md:h-[36px] bg-[#c78caf] border-[3px] border-[#2c336c] flex items-center justify-center text-[11px] md:text-[13px] font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_0_#2c336c] transition-all cursor-pointer">
                             Auth
-                            <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full border-2 border-bgBase bg-green-500" />
+                            <div className="absolute -top-3 -right-3 w-6 h-6 border-[3px] border-[#2c336c] bg-[#10B981] flex justify-center items-center text-[10px] font-black shadow-[2px_2px_0_0_#2c336c] text-[#2c336c]" title="P3">P3</div>
                         </div>
 
-                        <div className="absolute top-[232px] left-[252px] w-[100px] h-[36px] bg-[rgba(20,20,40,0.9)] border-[1.5px] border-nodeApi rounded-lg flex items-center justify-center text-[13px] font-medium text-[#F4F4F8] shadow-[0_0_12px_rgba(59,130,246,0.3)] hover:scale-105 hover:drop-shadow-[0_0_10px_#3B82F6] transition-all cursor-pointer">
+                        <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[100px] h-[32px] md:w-[110px] md:h-[36px] bg-[#f3f3f2] border-[3px] border-[#2c336c] flex items-center justify-center text-[11px] md:text-[13px] font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_0_#2c336c] transition-all cursor-pointer">
                             API Gateway
-                            <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full border-2 border-bgBase bg-yellow-500" />
+                            <div className="absolute -top-3 -right-3 w-6 h-6 border-[3px] border-[#2c336c] bg-[#F59E0B] flex justify-center items-center text-[10px] font-black shadow-[2px_2px_0_0_#2c336c] text-[#2c336c]" title="P2">P2</div>
                         </div>
 
-                        <div className="absolute top-[182px] left-[452px] w-[96px] h-[36px] bg-[rgba(20,20,40,0.9)] border-[1.5px] border-nodePayment rounded-lg flex items-center justify-center text-[13px] font-medium text-[#F4F4F8] shadow-[0_0_12px_rgba(217,70,239,0.3)] hover:scale-105 hover:drop-shadow-[0_0_10px_#D946EF] transition-all cursor-pointer">
+                        <div className="absolute top-[40%] left-[83%] -translate-x-1/2 -translate-y-1/2 w-[90px] h-[32px] md:w-[96px] md:h-[36px] bg-[#ddb9ac] border-[3px] border-[#2c336c] flex items-center justify-center text-[11px] md:text-[13px] font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_0_#2c336c] transition-all cursor-pointer">
                             Payment
                         </div>
 
-                        <div className="absolute top-[382px] left-[452px] w-[96px] h-[36px] bg-[rgba(20,20,40,0.9)] border-[1.5px] border-nodeDashboard rounded-lg flex items-center justify-center text-[13px] font-medium text-[#F4F4F8] shadow-[0_0_12px_rgba(245,158,11,0.3)] hover:scale-105 hover:drop-shadow-[0_0_10px_#F59E0B] transition-all cursor-pointer">
+                        <div className="absolute top-[80%] left-[83%] -translate-x-1/2 -translate-y-1/2 w-[90px] h-[32px] md:w-[96px] md:h-[36px] bg-[#bfb3ca] border-[3px] border-[#2c336c] flex items-center justify-center text-[11px] md:text-[13px] font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_0_#2c336c] transition-all cursor-pointer">
                             Dashboard
-                            <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full border-2 border-bgBase bg-purple-500" />
+                            <div className="absolute -top-3 -right-3 w-6 h-6 border-[3px] border-[#2c336c] bg-[#EF4444] flex justify-center items-center text-[10px] font-black shadow-[2px_2px_0_0_#2c336c] text-white" title="P1">P1</div>
                         </div>
 
-                        <div className="absolute top-[382px] left-[252px] w-[96px] h-[36px] bg-[rgba(20,20,40,0.9)] border-[1.5px] border-nodeDb rounded-lg flex items-center justify-center text-[13px] font-medium text-[#F4F4F8] shadow-[0_0_12px_rgba(34,211,238,0.3)] hover:scale-105 hover:drop-shadow-[0_0_10px_#22D3EE] transition-all cursor-pointer">
+                        <div className="absolute top-[80%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[90px] h-[32px] md:w-[96px] md:h-[36px] bg-[#ddb9ac] border-[3px] border-[#2c336c] flex items-center justify-center text-[11px] md:text-[13px] font-bold text-[#2c336c] shadow-[4px_4px_0_0_#2c336c] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_0_#2c336c] transition-all cursor-pointer">
                             DB
                         </div>
                     </div>

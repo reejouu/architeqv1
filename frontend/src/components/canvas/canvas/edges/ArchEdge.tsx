@@ -1,8 +1,13 @@
 "use client";
 
 import { BaseEdge, EdgeProps, getSmoothStepPath } from "@xyflow/react";
-import { NODE_TYPES_CONFIG, NodeType } from "@/lib/canvasConstants";
 
+/**
+ * ArchEdge — Excalidraw-style orthogonal edge with:
+ *   - Dashed stroke with arrowhead
+ *   - Uses pre-computed SVG path from edgePaths store if available
+ *   - Falls back to getSmoothStepPath otherwise
+ */
 export default function ArchEdge({
     id,
     sourceX,
@@ -12,35 +17,49 @@ export default function ArchEdge({
     sourcePosition,
     targetPosition,
     data,
+    markerEnd,
 }: EdgeProps) {
-    const lane = (data?.lane as number) || 0;
-    const [edgePath] = getSmoothStepPath({
-        sourceX, sourceY, sourcePosition,
-        targetX, targetY, targetPosition,
-        borderRadius: 16,
-        offset: 40 + lane * 14,
-    });
-    const sourceType = (data?.sourceType as NodeType) || "api";
-    const config = NODE_TYPES_CONFIG[sourceType] || NODE_TYPES_CONFIG.api;
-    const pathId = `arch-edge-path-${id}`;
+    // Check if we have a pre-computed path from the routing engine
+    const edgePath = data?.routedPath as string | undefined;
 
-    return (
-        <>
+    if (edgePath) {
+        // Use the pre-computed orthogonal path
+        return (
             <BaseEdge
                 id={id}
                 path={edgePath}
+                markerEnd={markerEnd}
                 style={{
-                    stroke: `rgba(${config.rgb},0.4)`,
-                    strokeWidth: 1.5,
+                    stroke: "#0000",
+                    strokeWidth: 2,
+                    strokeOpacity: 1,
+                    strokeLinecap: "round",
                 }}
             />
-            {/* Animated dot following the path */}
-            <path id={pathId} d={edgePath} fill="none" stroke="none" />
-            <circle r="4" fill={config.color} fillOpacity={0.8}>
-                <animateMotion dur="2.4s" repeatCount="indefinite" rotate="auto">
-                    <mpath href={`#${pathId}`} />
-                </animateMotion>
-            </circle>
-        </>
+        );
+    }
+
+    // Fallback: standard smooth step path
+    const lane = (data?.lane as number) || 0;
+    const [fallbackPath] = getSmoothStepPath({
+        sourceX, sourceY, sourcePosition,
+        targetX, targetY, targetPosition,
+        borderRadius: 8,
+        offset: 40 + lane * 14,
+    });
+
+    return (
+        <BaseEdge
+            id={id}
+            path={fallbackPath}
+            markerEnd={markerEnd}
+            style={{
+                stroke: "#636798",
+                strokeWidth: 1.5,
+                strokeOpacity: 0.6,
+                strokeDasharray: "6 6",
+                strokeLinecap: "round",
+            }}
+        />
     );
 }

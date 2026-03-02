@@ -1,50 +1,117 @@
 {
   "nodes": [
-    { "id": "users", "label": "Users (Patient / Doctor)", "type": "entry", "layer": 0, "column": 1 },
-    { "id": "admin", "label": "Admin Panel", "type": "entry", "layer": 0, "column": 3 },
-
-    { "id": "auth", "label": "Auth Service", "type": "core", "layer": 1, "column": 1 },
-    { "id": "profile", "label": "User Profile Service", "type": "core", "layer": 1, "column": 2 },
-    { "id": "doctor", "label": "Doctor Management", "type": "core", "layer": 1, "column": 3 },
-    { "id": "search", "label": "Search & Discovery", "type": "core", "layer": 1, "column": 4 },
-
-    { "id": "booking", "label": "Appointment Booking Engine", "type": "core", "layer": 2, "column": 2 },
-    { "id": "schedule", "label": "Doctor Availability Scheduler", "type": "service", "layer": 2, "column": 3 },
-    { "id": "payment", "label": "Payment Service", "type": "integration", "layer": 2, "column": 4 },
-
-    { "id": "notification", "label": "Notification Service", "type": "service", "layer": 3, "column": 2 },
-    { "id": "reminder", "label": "Reminder & Follow-up Engine", "type": "service", "layer": 3, "column": 3 },
-
-    { "id": "analytics", "label": "Analytics & Reporting", "type": "engine", "layer": 3, "column": 4 },
-
-    { "id": "db_users", "label": "User DB", "type": "database", "layer": 4, "column": 1 },
-    { "id": "db_doctors", "label": "Doctor DB", "type": "database", "layer": 4, "column": 2 },
-    { "id": "db_bookings", "label": "Booking DB", "type": "database", "layer": 4, "column": 3 },
-    { "id": "db_payments", "label": "Payment DB", "type": "database", "layer": 4, "column": 4 }
+    {
+      "id": "users",
+      "label": "Users",
+      "type": "entry",
+      "layer": 0,
+      "column": 1
+    },
+    {
+      "id": "user_authentication",
+      "label": "User Authentication",
+      "type": "core",
+      "layer": 1,
+      "column": 1
+    },
+    {
+      "id": "user_profile",
+      "label": "User Profile",
+      "type": "core",
+      "layer": 1,
+      "column": 2
+    },
+    {
+      "id": "note_management",
+      "label": "Note Management",
+      "type": "core",
+      "layer": 2,
+      "column": 1
+    },
+    {
+      "id": "note_organization",
+      "label": "Note Organization",
+      "type": "core",
+      "layer": 2,
+      "column": 2
+    },
+    {
+      "id": "user_database",
+      "label": "User Database",
+      "type": "database",
+      "layer": 4,
+      "column": 1
+    },
+    {
+      "id": "notes_database",
+      "label": "Notes Database",
+      "type": "database",
+      "layer": 4,
+      "column": 2
+    },
+    {
+      "id": "note_search",
+      "label": "Note Search",
+      "type": "service",
+      "layer": 3,
+      "column": 1
+    },
+    {
+      "id": "note_archive",
+      "label": "Note Archive",
+      "type": "service",
+      "layer": 3,
+      "column": 2
+    }
   ],
-
   "edges": [
-    { "from": "users", "to": "auth" },
-    { "from": "admin", "to": "doctor" },
-
-    { "from": "auth", "to": "profile" },
-    { "from": "profile", "to": "search" },
-    { "from": "search", "to": "booking" },
-
-    { "from": "doctor", "to": "schedule" },
-    { "from": "schedule", "to": "booking" },
-
-    { "from": "booking", "to": "payment" },
-    { "from": "payment", "to": "booking" },
-
-    { "from": "booking", "to": "notification" },
-    { "from": "booking", "to": "reminder" },
-
-    { "from": "booking", "to": "analytics" },
-
-    { "from": "profile", "to": "db_users" },
-    { "from": "doctor", "to": "db_doctors" },
-    { "from": "booking", "to": "db_bookings" },
-    { "from": "payment", "to": "db_payments" }
+    {
+      "from": "users",
+      "to": "user_authentication"
+    },
+    {
+      "from": "user_authentication",
+      "to": "note_management"
+    },
+    {
+      "from": "user_authentication",
+      "to": "note_organization"
+    },
+    {
+      "from": "user_profile",
+      "to": "note_organization"
+    },
+    {
+      "from": "note_management",
+      "to": "notes_database"
+    },
+    {
+      "from": "note_organization",
+      "to": "user_database"
+    },
+    {
+      "from": "user_profile",
+      "to": "user_database"
+    },
+    {
+      "from": "user_authentication",
+      "to": "user_profile"
+    },
+    {
+      "from": "user_authentication",
+      "to": "note_search"
+    },
+    {
+      "from": "note_search",
+      "to": "notes_database"
+    },
+    {
+      "from": "user_authentication",
+      "to": "note_archive"
+    },
+    {
+      "from": "note_archive",
+      "to": "notes_database"
+    }
   ]
 }

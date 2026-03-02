@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { NODE_TYPES_CONFIG, NodeType } from "@/lib/canvasConstants";
+import { NODE_TYPES_CONFIG, NodeType } from "@/lib/constants/canvasConstants";
 import { useCanvasStore } from "@/store/canvasStore";
 
 const ICONS: Record<string, React.ReactElement> = {
@@ -44,9 +44,8 @@ export default function LeftSidebar() {
                 bottom: 48,
                 width: sidebarWidth,
                 zIndex: 50,
-                background: "rgba(10,10,15,0.92)",
-                backdropFilter: "blur(20px)",
-                borderRight: "1px solid rgba(139,92,246,0.12)",
+                background: "#f3f3f2",
+                borderRight: "3px solid #2c336c",
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
@@ -55,16 +54,16 @@ export default function LeftSidebar() {
         >
             {/* ── Collapse toggle ── */}
             <div style={{
-                height: 44,
+                height: 48,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: sidebarOpen ? "space-between" : "center",
                 padding: sidebarOpen ? "0 14px 0 16px" : "0",
-                borderBottom: "1px solid rgba(139,92,246,0.08)",
+                borderBottom: "3px solid #2c336c",
                 flexShrink: 0,
             }}>
                 {sidebarOpen && (
-                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#8B5CF6", textTransform: "uppercase" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", color: "#2c336c", textTransform: "uppercase" }}>
                         Components
                     </span>
                 )}
@@ -72,23 +71,26 @@ export default function LeftSidebar() {
                     onClick={() => setSidebarOpen(!sidebarOpen)}
                     title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                     style={{
-                        width: 28, height: 28, borderRadius: 7,
-                        border: "1px solid rgba(139,92,246,0.2)",
-                        background: "rgba(139,92,246,0.06)",
+                        width: 28, height: 28, borderRadius: 0,
+                        border: "2px solid #2c336c",
+                        background: "#c78caf",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", color: "#8B5CF6", flexShrink: 0,
-                        transition: "background 150ms, border-color 150ms",
+                        cursor: "pointer", color: "#2c336c", flexShrink: 0,
+                        boxShadow: "2px 2px 0px 0px #2c336c",
+                        transition: "all 150ms",
                     }}
                     onMouseEnter={e => {
-                        (e.currentTarget as HTMLElement).style.background = "rgba(139,92,246,0.15)";
-                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(139,92,246,0.5)";
+                        (e.currentTarget as HTMLElement).style.background = "#bf979e";
+                        (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
                     }}
                     onMouseLeave={e => {
-                        (e.currentTarget as HTMLElement).style.background = "rgba(139,92,246,0.06)";
-                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(139,92,246,0.2)";
+                        (e.currentTarget as HTMLElement).style.background = "#c78caf";
+                        (e.currentTarget as HTMLElement).style.transform = "translate(0, 0)";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
                     }}
                 >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                         style={{ transform: sidebarOpen ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 250ms ease" }}>
                         <polyline points="15 18 9 12 15 6" />
                     </svg>
@@ -105,21 +107,24 @@ export default function LeftSidebar() {
                             onDragStart={e => handleDragStart(e, type)}
                             title={config.label}
                             style={{
-                                width: 32, height: 32, borderRadius: 8, margin: "4px auto",
-                                border: `1px solid rgba(${config.rgb},0.2)`,
-                                background: `rgba(${config.rgb},0.06)`,
+                                width: 34, height: 34, borderRadius: 0, margin: "6px auto",
+                                border: `2px solid #2c336c`,
+                                background: `#ffffff`,
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 color: config.color, cursor: "grab", transition: "all 150ms",
+                                boxShadow: "2px 2px 0px 0px #2c336c"
                             }}
                             onMouseEnter={e => {
                                 const el = e.currentTarget;
-                                el.style.background = `rgba(${config.rgb},0.18)`;
-                                el.style.borderColor = config.color;
+                                el.style.background = "#f3f3f2";
+                                el.style.transform = "translate(-2px, -2px)";
+                                el.style.boxShadow = "4px 4px 0px 0px #2c336c";
                             }}
                             onMouseLeave={e => {
                                 const el = e.currentTarget;
-                                el.style.background = `rgba(${config.rgb},0.06)`;
-                                el.style.borderColor = `rgba(${config.rgb},0.2)`;
+                                el.style.background = "#ffffff";
+                                el.style.transform = "translate(0px, 0px)";
+                                el.style.boxShadow = "2px 2px 0px 0px #2c336c";
                             }}
                         >
                             {ICONS[config.icon]}
@@ -138,67 +143,71 @@ export default function LeftSidebar() {
                         <div
                             onClick={() => setPaletteOpen(o => !o)}
                             style={{
-                                height: 36, padding: "0 14px",
+                                height: 40, padding: "0 14px",
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
                                 cursor: "pointer", userSelect: "none",
-                                borderBottom: "1px solid rgba(139,92,246,0.07)",
+                                borderBottom: "3px solid #2c336c",
+                                background: "#ddb9ac"
                             }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)"}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#c78caf"}
+                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#ddb9ac"}
                         >
-                            <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#52525B" }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#2c336c" }}>
                                 Node Types
                             </span>
-                            <span style={{ color: "#52525B" }}>
+                            <span style={{ color: "#2c336c" }}>
                                 <ChevronIcon open={paletteOpen} />
                             </span>
                         </div>
 
                         {/* Node cards — single column, no overflow */}
                         {paletteOpen && (
-                            <div style={{ padding: "6px 10px 2px" }}>
+                            <div style={{ padding: "10px 10px 2px", borderBottom: "3px solid #2c336c" }}>
                                 {(Object.entries(NODE_TYPES_CONFIG) as [NodeType, typeof NODE_TYPES_CONFIG[NodeType]][]).map(([type, config]) => (
                                     <div
                                         key={type}
                                         draggable
                                         onDragStart={e => handleDragStart(e, type)}
                                         style={{
-                                            height: 34,
-                                            borderRadius: 7,
-                                            border: `1px solid rgba(${config.rgb},0.2)`,
-                                            background: `rgba(${config.rgb},0.05)`,
+                                            height: 38,
+                                            borderRadius: 0,
+                                            border: `2px solid #2c336c`,
+                                            background: `#ffffff`,
+                                            boxShadow: "2px 2px 0px 0px #2c336c",
                                             display: "flex", alignItems: "center", gap: 9,
-                                            padding: "0 10px", marginBottom: 4,
+                                            padding: "0 10px", marginBottom: 8,
                                             cursor: "grab", userSelect: "none",
-                                            transition: "border-color 150ms, background 150ms",
+                                            transition: "all 150ms",
                                             width: "100%", boxSizing: "border-box",
                                         }}
                                         onMouseEnter={e => {
                                             const el = e.currentTarget;
-                                            el.style.borderColor = config.color;
-                                            el.style.background = `rgba(${config.rgb},0.12)`;
+                                            el.style.transform = "translate(-2px, -2px)";
+                                            el.style.boxShadow = "4px 4px 0px 0px #2c336c";
+                                            el.style.background = "#f3f3f2";
                                         }}
                                         onMouseLeave={e => {
                                             const el = e.currentTarget;
-                                            el.style.borderColor = `rgba(${config.rgb},0.2)`;
-                                            el.style.background = `rgba(${config.rgb},0.05)`;
+                                            el.style.transform = "translate(0px, 0px)";
+                                            el.style.boxShadow = "2px 2px 0px 0px #2c336c";
+                                            el.style.background = "#ffffff";
                                         }}
                                     >
                                         {/* Color dot */}
-                                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: config.color, flexShrink: 0 }} />
+                                        <div style={{ width: 10, height: 10, borderRadius: 0, border: "2px solid #2c336c", background: config.color, flexShrink: 0 }} />
                                         {/* Icon */}
-                                        <span style={{ color: config.color, flexShrink: 0, lineHeight: 0 }}>
+                                        <span style={{ color: "#2c336c", flexShrink: 0, lineHeight: 0 }}>
                                             {ICONS[config.icon]}
                                         </span>
                                         {/* Label */}
-                                        <span style={{ fontSize: 12, fontWeight: 500, color: "#E4E4F0", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        <span style={{ fontSize: 13, fontWeight: 700, color: "#2c336c", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                             {config.label}
                                         </span>
                                         {/* Drag handle hint */}
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" style={{ flexShrink: 0 }}>
-                                            <circle cx="9" cy="7" r="1" fill="currentColor" /><circle cx="15" cy="7" r="1" fill="currentColor" />
-                                            <circle cx="9" cy="12" r="1" fill="currentColor" /><circle cx="15" cy="12" r="1" fill="currentColor" />
-                                            <circle cx="9" cy="17" r="1" fill="currentColor" /><circle cx="15" cy="17" r="1" fill="currentColor" />
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2c336c" strokeWidth="3" style={{ flexShrink: 0 }}>
+                                            <circle cx="9" cy="7" r="1.5" fill="currentColor" /><circle cx="15" cy="7" r="1.5" fill="currentColor" />
+                                            <circle cx="9" cy="12" r="1.5" fill="currentColor" /><circle cx="15" cy="12" r="1.5" fill="currentColor" />
+                                            <circle cx="9" cy="17" r="1.5" fill="currentColor" /><circle cx="15" cy="17" r="1.5" fill="currentColor" />
                                         </svg>
                                     </div>
                                 ))}
@@ -206,8 +215,7 @@ export default function LeftSidebar() {
                         )}
                     </div>
 
-                    {/* Divider */}
-                    <div style={{ height: 1, background: "rgba(139,92,246,0.08)", margin: "4px 0", flexShrink: 0 }} />
+                    {/* Divider element removed initially, relying on border bottom of palette container */}
 
                     {/* LAYERS section */}
                     <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
@@ -215,74 +223,82 @@ export default function LeftSidebar() {
                         <div
                             onClick={() => setLayersOpen(o => !o)}
                             style={{
-                                height: 36, padding: "0 14px",
+                                height: 40, padding: "0 14px",
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
                                 cursor: "pointer", userSelect: "none",
-                                borderBottom: "1px solid rgba(139,92,246,0.07)",
+                                borderBottom: "3px solid #2c336c",
+                                background: "#bfb3ca",
                                 flexShrink: 0,
                             }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)"}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#c78caf"}
+                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#bfb3ca"}
                         >
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#52525B" }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#2c336c" }}>
                                     Layers
                                 </span>
                                 {nodes.length > 0 && (
                                     <span style={{
-                                        fontSize: 9, fontWeight: 700, background: "rgba(139,92,246,0.2)",
-                                        color: "#8B5CF6", borderRadius: 4, padding: "1px 5px",
+                                        fontSize: 11, fontWeight: 700, background: "#ffffff",
+                                        border: "2px solid #2c336c",
+                                        color: "#2c336c", borderRadius: 0, padding: "2px 6px",
                                     }}>{nodes.length}</span>
                                 )}
                             </div>
-                            <span style={{ color: "#52525B" }}>
+                            <span style={{ color: "#2c336c" }}>
                                 <ChevronIcon open={layersOpen} />
                             </span>
                         </div>
 
                         {layersOpen && (
-                            <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "4px 0 8px" }}>
+                            <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "10px 0 8px" }}>
                                 {nodes.length === 0 && (
-                                    <div style={{ padding: "12px 16px", fontSize: 12, color: "#3A3A52", fontStyle: "italic", textAlign: "center" }}>
+                                    <div style={{ padding: "12px 16px", fontSize: 13, color: "#636798", fontWeight: 700, textAlign: "center" }}>
                                         No nodes yet
                                     </div>
                                 )}
                                 {nodes.map(node => {
-                                    const config = NODE_TYPES_CONFIG[node.data.type as keyof typeof NODE_TYPES_CONFIG];
+                                    const rawType = node.data.type as string;
+                                    const isUnknown = !(rawType in NODE_TYPES_CONFIG);
+                                    const config = isUnknown ? null : NODE_TYPES_CONFIG[rawType as NodeType];
                                     const isSelected = node.id === selectedNodeId;
                                     return (
                                         <div
                                             key={node.id}
                                             onClick={() => selectNode(isSelected ? null : node.id)}
                                             style={{
-                                                height: 30, padding: "0 12px",
+                                                height: 38, padding: "0 12px",
                                                 display: "flex", alignItems: "center", gap: 8,
-                                                margin: "1px 8px", borderRadius: 6,
-                                                cursor: "pointer", fontSize: 12,
-                                                color: isSelected ? "#C4B5FD" : "#A1A1AA",
-                                                background: isSelected ? "rgba(139,92,246,0.12)" : "transparent",
-                                                borderLeft: `2px solid ${isSelected ? "#8B5CF6" : "transparent"}`,
+                                                margin: "0 10px 8px", borderRadius: 0,
+                                                border: "2px solid #2c336c",
+                                                boxShadow: isSelected ? "4px 4px 0px 0px #2c336c" : "2px 2px 0px 0px #2c336c",
+                                                cursor: "pointer", fontSize: 13, fontWeight: 700,
+                                                color: "#2c336c",
+                                                background: isSelected ? "#ddb9ac" : "#ffffff",
                                                 transition: "all 150ms",
+                                                transform: isSelected ? "translate(-2px, -2px)" : "translate(0, 0)",
                                             }}
                                             onMouseEnter={e => {
                                                 if (!isSelected) {
-                                                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
-                                                    (e.currentTarget as HTMLElement).style.color = "#F4F4F8";
+                                                    (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
+                                                    (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
+                                                    (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
                                                 }
                                             }}
                                             onMouseLeave={e => {
                                                 if (!isSelected) {
-                                                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                                                    (e.currentTarget as HTMLElement).style.color = "#A1A1AA";
+                                                    (e.currentTarget as HTMLElement).style.background = "#ffffff";
+                                                    (e.currentTarget as HTMLElement).style.transform = "translate(0px, 0px)";
+                                                    (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
                                                 }
                                             }}
                                         >
-                                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: config?.color || "#52525B", flexShrink: 0 }} />
+                                            <div style={{ width: 8, height: 8, borderRadius: 0, border: "2px solid #2c336c", background: config?.color || "#52525B", flexShrink: 0 }} />
                                             <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                                 {String(node.data.label || node.id)}
                                             </span>
                                             {isSelected && (
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2.5">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2c336c" strokeWidth="3">
                                                     <polyline points="20 6 9 17 4 12" />
                                                 </svg>
                                             )}

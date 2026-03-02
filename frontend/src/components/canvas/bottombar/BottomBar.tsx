@@ -19,20 +19,29 @@ const IconBtn = ({
         title={title}
         onClick={onClick}
         style={{
-            width: 28,
-            height: 28,
-            borderRadius: 6,
-            border: "none",
-            background: active ? "rgba(245,158,11,0.12)" : "transparent",
-            color: active ? "#F59E0B" : "#A1A1AA",
+            width: 32,
+            height: 32,
+            borderRadius: 0,
+            border: "2px solid #2c336c",
+            background: active ? "#c78caf" : "#ffffff",
+            color: "#2c336c",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             transition: "all 150ms",
+            boxShadow: "2px 2px 0px 0px #2c336c"
         }}
-        onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLElement).style.color = active ? "#F59E0B" : "#F4F4F8"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = active ? "rgba(245,158,11,0.12)" : "transparent"; (e.currentTarget as HTMLElement).style.color = active ? "#F59E0B" : "#A1A1AA"; }}
+        onMouseEnter={(e) => {
+            if (!active) (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
+            (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
+        }}
+        onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = active ? "#c78caf" : "#ffffff";
+            (e.currentTarget as HTMLElement).style.transform = "translate(0, 0)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
+        }}
     >
         {children}
     </button>
@@ -57,9 +66,8 @@ export default function BottomBar() {
                 right: 0,
                 height: 48,
                 zIndex: 100,
-                background: "rgba(10,10,15,0.92)",
-                backdropFilter: "blur(20px)",
-                borderTop: "1px solid rgba(139,92,246,0.1)",
+                background: "#f3f3f2",
+                borderTop: "3px solid #2c336c",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -67,27 +75,27 @@ export default function BottomBar() {
             }}
         >
             {/* LEFT — Zoom controls */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <IconBtn title="Zoom out" onClick={handleZoomOut}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 </IconBtn>
                 <span
-                    style={{ fontSize: 12, fontWeight: 500, color: "#A1A1AA", minWidth: 44, textAlign: "center", cursor: "pointer" }}
+                    style={{ fontSize: 13, fontWeight: 800, color: "#2c336c", minWidth: 44, textAlign: "center", cursor: "pointer" }}
                     title="Click to enter zoom %"
                 >
                     {zoom}%
                 </span>
                 <IconBtn title="Zoom in" onClick={handleZoomIn}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 </IconBtn>
                 <IconBtn title="Fit to view (⌘⇧F)" onClick={handleFitView}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3" /><path d="M21 8V5a2 2 0 0 0-2-2h-3" /><path d="M3 16v3a2 2 0 0 0 2 2h3" /><path d="M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M8 3H5a2 2 0 0 0-2 2v3" /><path d="M21 8V5a2 2 0 0 0-2-2h-3" /><path d="M3 16v3a2 2 0 0 0 2 2h3" /><path d="M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
                 </IconBtn>
                 <IconBtn title={locked ? "Canvas locked" : "Lock canvas"} onClick={() => setLocked((l) => !l)} active={locked}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         {locked
-                            ? <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>
-                            : <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></>
+                            ? <><rect x="3" y="11" width="18" height="11" rx="0" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>
+                            : <><rect x="3" y="11" width="18" height="11" rx="0" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></>
                         }
                     </svg>
                 </IconBtn>
@@ -98,17 +106,18 @@ export default function BottomBar() {
                 style={{
                     width: 160,
                     height: 32,
-                    background: "rgba(20,20,40,0.8)",
-                    border: "1px solid rgba(139,92,246,0.15)",
-                    borderRadius: 6,
+                    background: "#ffffff",
+                    border: "2px solid #2c336c",
+                    borderRadius: 0,
                     overflow: "hidden",
                     position: "relative",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    boxShadow: "inset 2px 2px 0px 0px rgba(44, 51, 108, 0.1)"
                 }}
             >
-                <span style={{ fontSize: 10, color: "#3A3A52" }}>minimap</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#636798" }}>minimap</span>
                 {/* Viewport rect indicator */}
                 <div
                     style={{
@@ -117,24 +126,24 @@ export default function BottomBar() {
                         left: "20%",
                         width: "60%",
                         height: "60%",
-                        border: "1px solid rgba(139,92,246,0.4)",
-                        background: "rgba(139,92,246,0.1)",
-                        borderRadius: 2,
+                        border: "2px solid #2c336c",
+                        background: "rgba(199, 140, 175, 0.2)",
+                        borderRadius: 0,
                     }}
                 />
             </div>
 
             {/* RIGHT — Node count + status */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: 12, color: "#52525B" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#2c336c" }}>
                     {nodes.length} node{nodes.length !== 1 ? "s" : ""} · {edges.length} edge{edges.length !== 1 ? "s" : ""}
                 </span>
                 <div
                     title="Connected · auto-saving"
-                    style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", cursor: "default" }}
+                    style={{ width: 10, height: 10, borderRadius: "50%", background: "#10B981", border: "2px solid #2c336c", cursor: "default" }}
                 />
                 <IconBtn title="Keyboard shortcuts">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
                     </svg>
                 </IconBtn>

@@ -9,13 +9,16 @@ import {
     useEdgesState,
     addEdge,
     Connection,
+    ConnectionMode,
+    ConnectionLineType,
     Node,
     Edge,
     useReactFlow,
+    MarkerType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCanvasStore } from "@/store/canvasStore";
-import { NODE_TYPES_CONFIG, NodeType } from "@/lib/canvasConstants";
+import { NODE_TYPES_CONFIG, NodeType } from "@/lib/constants/canvasConstants";
 import ArchNode from "./nodes/ArchNode";
 import ArchEdge from "./edges/ArchEdge";
 import DependencyEdge from "./edges/DependencyEdge";
@@ -27,6 +30,38 @@ const edgeTypes = {
     dependencyEdge: DependencyEdge,
     criticalEdge: CriticalEdge,
 };
+
+// Custom SVG arrow marker
+function ArrowMarkerDefs() {
+    return (
+        <svg style={{ position: "absolute", width: 0, height: 0 }}>
+            <defs>
+                <marker
+                    id="archArrow"
+                    viewBox="0 0 10 10"
+                    refX="10"
+                    refY="5"
+                    markerWidth="8"
+                    markerHeight="8"
+                    orient="auto-start-reverse"
+                >
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#636798" />
+                </marker>
+                <marker
+                    id="archArrowBlack"
+                    viewBox="0 0 10 10"
+                    refX="10"
+                    refY="5"
+                    markerWidth="8"
+                    markerHeight="8"
+                    orient="auto-start-reverse"
+                >
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#2c336c" />
+                </marker>
+            </defs>
+        </svg>
+    );
+}
 
 function EmptyState({ onGenerate }: { onGenerate: () => void }) {
     return (
@@ -45,28 +80,37 @@ function EmptyState({ onGenerate }: { onGenerate: () => void }) {
                 style={{
                     width: 320,
                     height: 200,
-                    border: "1.5px dashed rgba(139,92,246,0.2)",
-                    borderRadius: 16,
-                    background: "rgba(139,92,246,0.02)",
+                    border: "3px solid #2c336c",
+                    borderRadius: 0,
+                    background: "#ddb9ac",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: 10,
+                    gap: 12,
+                    boxShadow: "4px 4px 0px 0px #2c336c"
                 }}
             >
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(139,92,246,0.3)" strokeWidth="1.5">
-                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2c336c" strokeWidth="2.5">
+                    <rect x="2" y="3" width="20" height="14" rx="0" />
                     <path d="M8 21h8M12 17v4" />
                     <circle cx="7" cy="10" r="1.5" /><circle cx="12" cy="10" r="1.5" /><circle cx="17" cy="10" r="1.5" />
                     <path d="M7 10h5M12 10h5" strokeDasharray="2 2" />
                 </svg>
-                <p style={{ fontSize: 16, fontWeight: 500, color: "#52525B", margin: 0 }}>Your canvas is empty</p>
-                <p style={{ fontSize: 13, color: "#3A3A52", margin: 0 }}>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "#2c336c", margin: 0 }}>Your canvas is empty</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#2c336c", margin: 0 }}>
                     Drag a node from the left panel, or{" "}
                     <span
                         onClick={onGenerate}
-                        style={{ color: "#8B5CF6", cursor: "pointer", pointerEvents: "all", fontWeight: 500 }}
+                        style={{ color: "#f3f3f2", background: "#2c336c", padding: "2px 6px", cursor: "pointer", pointerEvents: "all", fontWeight: 700, display: "inline-block", border: "2px solid #2c336c" }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLElement).style.background = "#c78caf";
+                            (e.currentTarget as HTMLElement).style.color = "#2c336c";
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLElement).style.background = "#2c336c";
+                            (e.currentTarget as HTMLElement).style.color = "#f3f3f2";
+                        }}
                     >
                         generate with AI →
                     </span>
@@ -94,11 +138,11 @@ export default function CanvasArea() {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const { screenToFlowPosition, getEdges, getNodes, fitView } = useReactFlow();
 
-    // Sync store → React Flow state safely via useEffect (avoids setState-during-render)
+    // Sync store → React Flow state
     useEffect(() => { setNodes(storeNodes); }, [storeNodes, setNodes]);
     useEffect(() => { setEdges(storeEdges); }, [storeEdges, setEdges]);
 
-    // Auto-fit view whenever generation completes (fitViewTrigger increments)
+    // Auto-fit view whenever generation completes
     useEffect(() => {
         if (fitViewTrigger === 0) return;
         fitView({ padding: 0.4, duration: 600 });
@@ -106,9 +150,13 @@ export default function CanvasArea() {
 
     const onConnect = useCallback(
         (connection: Connection) => {
-            const newEdge: Edge = { ...connection, type: "archEdge", id: `e-${Date.now()}` } as Edge;
+            const newEdge: Edge = {
+                ...connection,
+                type: "archEdge",
+                id: `e-${Date.now()}`,
+                markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" }
+            } as Edge;
             setEdges((eds) => addEdge(newEdge, eds));
-            // defer so getEdges() returns the updated list
             setTimeout(() => storeSetEdges(getEdges()), 0);
         },
         [setEdges, storeSetEdges, getEdges]
@@ -160,7 +208,6 @@ export default function CanvasArea() {
                 data: { type, label: config.label },
             };
             setNodes((nds) => [...nds, newNode]);
-            // defer so getNodes() returns updated list
             setTimeout(() => storeSetNodes(getNodes()), 0);
         },
         [screenToFlowPosition, setNodes, storeSetNodes, getNodes]
@@ -175,6 +222,7 @@ export default function CanvasArea() {
 
     return (
         <div ref={reactFlowWrapper} style={{ width: "100%", height: "100%", position: "relative" }}>
+            <ArrowMarkerDefs />
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -194,32 +242,30 @@ export default function CanvasArea() {
                 selectionKeyCode="Shift"
                 multiSelectionKeyCode="Meta"
                 connectionLineStyle={{
-                    stroke: "rgba(255,255,255,0.2)",
+                    stroke: "#636798",
                     strokeWidth: 1.5,
-                    strokeDasharray: "4 6",
+                    strokeLinecap: "round",
                 }}
+                connectionLineType={ConnectionLineType.SmoothStep}
+                defaultEdgeOptions={{
+                    type: "smoothstep",
+                    animated: false,
+                    style: { stroke: "#636798", strokeWidth: 1.5 },
+                    markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" },
+                }}
+                connectionMode={ConnectionMode.Loose}
+                snapToGrid={false}
                 style={{ background: "transparent" }}
                 fitView
-                fitViewOptions={{ padding: 0.3 }}
+                fitViewOptions={{ padding: 0.12 }}
             >
                 <Background
                     variant={BackgroundVariant.Dots}
                     gap={32}
-                    size={1}
-                    color="rgba(139,92,246,0.1)"
+                    size={2}
+                    color="#2c336c"
                 />
             </ReactFlow>
-
-            {/* Radial glow overlay */}
-            <div
-                style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(139,92,246,0.04) 0%, transparent 100%)",
-                    pointerEvents: "none",
-                    zIndex: 1,
-                }}
-            />
 
             {isEmpty && <EmptyState onGenerate={openGenerateModal} />}
         </div>
