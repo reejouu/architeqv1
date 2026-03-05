@@ -78,12 +78,12 @@ export function phase2_initial(
 // Places items from center outward: index order [center, center±1, center±2, ...]
 // Result: lowest pressure in center, highest pressure at edges
 function interleaveFromCenter<T>(items: T[]): T[] {
-    if (items.length === 0) return [];
-    if (items.length === 1) return [items[0]];
+    if (!items || items.length === 0) return [];
 
     const result: T[] = new Array(items.length);
-    let left = Math.floor((items.length - 1) / 2);
-    let right = Math.ceil((items.length - 1) / 2);
+    const mid = Math.floor((items.length - 1) / 2);
+    let left = mid;
+    let right = mid + 1;
 
     for (let i = 0; i < items.length; i++) {
         if (i % 2 === 0) {

@@ -47,22 +47,22 @@ export const GRAPH_TYPE_CONFIG: Record<string, {
     bg: string;
     borderColor: string;
 }> = {
-    core: { color: "#8B5CF6", rgb: "139,92,246", bg: "rgba(139,92,246,0.06)", borderColor: "rgba(139,92,246,0.25)" },
-    integration: { color: "#06B6D4", rgb: "6,182,212", bg: "rgba(6,182,212,0.06)", borderColor: "rgba(6,182,212,0.25)" },
-    service: { color: "#10B981", rgb: "16,185,129", bg: "rgba(16,185,129,0.06)", borderColor: "rgba(16,185,129,0.25)" },
-    database: { color: "#3B82F6", rgb: "59,130,246", bg: "rgba(59,130,246,0.06)", borderColor: "rgba(59,130,246,0.25)" },
-    frontend: { color: "#F59E0B", rgb: "245,158,11", bg: "rgba(245,158,11,0.06)", borderColor: "rgba(245,158,11,0.25)" },
-    queue: { color: "#EC4899", rgb: "236,72,153", bg: "rgba(236,72,153,0.06)", borderColor: "rgba(236,72,153,0.25)" },
-    cache: { color: "#F97316", rgb: "249,115,22", bg: "rgba(249,115,22,0.06)", borderColor: "rgba(249,115,22,0.25)" },
-    agent: { color: "#A78BFA", rgb: "167,139,250", bg: "rgba(167,139,250,0.06)", borderColor: "rgba(167,139,250,0.25)" },
-    engine: { color: "#38BDF8", rgb: "56,189,248", bg: "rgba(56,189,248,0.06)", borderColor: "rgba(56,189,248,0.25)" },
-    ai: { color: "#E879F9", rgb: "232,121,249", bg: "rgba(232,121,249,0.06)", borderColor: "rgba(232,121,249,0.25)" },
-    ui: { color: "#34D399", rgb: "52,211,153", bg: "rgba(52,211,153,0.06)", borderColor: "rgba(52,211,153,0.25)" },
-    state: { color: "#60A5FA", rgb: "96,165,250", bg: "rgba(96,165,250,0.06)", borderColor: "rgba(96,165,250,0.25)" },
-    infra: { color: "#F87171", rgb: "248,113,113", bg: "rgba(248,113,113,0.06)", borderColor: "rgba(248,113,113,0.25)" },
-    input: { color: "#FBBF24", rgb: "251,191,36", bg: "rgba(251,191,36,0.06)", borderColor: "rgba(251,191,36,0.25)" },
-    entry: { color: "#C084FC", rgb: "192,132,252", bg: "rgba(192,132,252,0.06)", borderColor: "rgba(192,132,252,0.25)" },
-    default: { color: "#71717A", rgb: "113,113,122", bg: "rgba(113,113,122,0.06)", borderColor: "rgba(113,113,122,0.25)" },
+    core: { color: "#7b6fa8", rgb: "123,111,168", bg: "rgba(123,111,168,0.08)", borderColor: "rgba(123,111,168,0.3)" },
+    integration: { color: "#5e8f9e", rgb: "94,143,158", bg: "rgba(94,143,158,0.08)", borderColor: "rgba(94,143,158,0.3)" },
+    service: { color: "#6a9f7c", rgb: "106,159,124", bg: "rgba(106,159,124,0.08)", borderColor: "rgba(106,159,124,0.3)" },
+    database: { color: "#5d7ea8", rgb: "93,126,168", bg: "rgba(93,126,168,0.08)", borderColor: "rgba(93,126,168,0.3)" },
+    frontend: { color: "#b89550", rgb: "184,149,80", bg: "rgba(184,149,80,0.08)", borderColor: "rgba(184,149,80,0.3)" },
+    queue: { color: "#a87090", rgb: "168,112,144", bg: "rgba(168,112,144,0.08)", borderColor: "rgba(168,112,144,0.3)" },
+    cache: { color: "#c07858", rgb: "192,120,88", bg: "rgba(192,120,88,0.08)", borderColor: "rgba(192,120,88,0.3)" },
+    agent: { color: "#8f80b4", rgb: "143,128,180", bg: "rgba(143,128,180,0.08)", borderColor: "rgba(143,128,180,0.3)" },
+    engine: { color: "#5e88a6", rgb: "94,136,166", bg: "rgba(94,136,166,0.08)", borderColor: "rgba(94,136,166,0.3)" },
+    ai: { color: "#a87aab", rgb: "168,122,171", bg: "rgba(168,122,171,0.08)", borderColor: "rgba(168,122,171,0.3)" },
+    ui: { color: "#6a9e8e", rgb: "106,158,142", bg: "rgba(106,158,142,0.08)", borderColor: "rgba(106,158,142,0.3)" },
+    state: { color: "#7089b5", rgb: "112,137,181", bg: "rgba(112,137,181,0.08)", borderColor: "rgba(112,137,181,0.3)" },
+    infra: { color: "#b06878", rgb: "176,104,120", bg: "rgba(176,104,120,0.08)", borderColor: "rgba(176,104,120,0.3)" },
+    input: { color: "#b08840", rgb: "176,136,64", bg: "rgba(176,136,64,0.08)", borderColor: "rgba(176,136,64,0.3)" },
+    entry: { color: "#9b6fb5", rgb: "155,111,181", bg: "rgba(155,111,181,0.08)", borderColor: "rgba(155,111,181,0.3)" },
+    default: { color: "#7a7a9e", rgb: "122,122,158", bg: "rgba(122,122,158,0.08)", borderColor: "rgba(122,122,158,0.3)" },
 };
 
 export const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
@@ -176,6 +176,7 @@ export function transformGraph(
             style: le.style,
             markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" },
             data: {
+                edgeStyle: "dashed",
                 exitPoint: le.data.exitPoint,
                 entryPoint: le.data.entryPoint,
                 waypoints: le.data.waypoints,

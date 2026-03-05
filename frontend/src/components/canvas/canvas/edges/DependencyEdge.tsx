@@ -3,7 +3,7 @@
 import { BaseEdge, EdgeProps, getSmoothStepPath } from "@xyflow/react";
 
 export default function DependencyEdge({
-    id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, markerEnd
+    id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, markerEnd, selected
 }: EdgeProps) {
     const edgePath = data?.routedPath as string | undefined;
 
@@ -14,9 +14,9 @@ export default function DependencyEdge({
                 path={edgePath}
                 markerEnd={markerEnd}
                 style={{
-                    stroke: "#85755e",
-                    strokeWidth: 1.5,
-                    strokeOpacity: 0.5,
+                    stroke: selected ? "#2c336c" : "#85755e",
+                    strokeWidth: selected ? 3 : 1.5,
+                    strokeOpacity: selected ? 1 : 0.5,
                     strokeDasharray: "4 4",
                     strokeLinecap: "round",
                 }}
@@ -38,9 +38,9 @@ export default function DependencyEdge({
             path={fallbackPath}
             markerEnd={markerEnd}
             style={{
-                stroke: "#85755e",
-                strokeWidth: 1.5,
-                strokeOpacity: 0.5,
+                stroke: selected ? "#2c336c" : "#85755e",
+                strokeWidth: selected ? 3 : 1.5,
+                strokeOpacity: selected ? 1 : 0.5,
                 strokeDasharray: "4 4",
                 strokeLinecap: "round",
             }}

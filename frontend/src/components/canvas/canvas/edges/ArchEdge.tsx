@@ -24,6 +24,7 @@ export default function ArchEdge({
     targetPosition,
     data,
     markerEnd,
+    selected,
 }: EdgeProps) {
 
     const exit = data?.exitPoint as { x: number; y: number } | undefined;
@@ -36,6 +37,11 @@ export default function ArchEdge({
 
     const exitOffset = data?.exitOffset as { dx: number; dy: number } | undefined;
     const entryOffset = data?.entryOffset as { dx: number; dy: number } | undefined;
+    const edgeStyle = data?.edgeStyle as string | undefined;
+
+    const strokeColor = selected ? "#2c336c" : "#636798";
+    const strokeWidth = selected ? 3 : 2;
+    const strokeDasharray = edgeStyle === "dashed" ? "6 6" : undefined;
 
     // ── Primary path: construct points dynamically relative to node positions ──
     if (exitOffset && entryOffset && routingType !== "smoothstep") {
@@ -70,10 +76,11 @@ export default function ArchEdge({
                 path={path}
                 markerEnd={markerEnd}
                 style={{
-                    stroke: "#636798",
-                    strokeWidth: 2,
+                    stroke: strokeColor,
+                    strokeWidth: strokeWidth,
                     strokeOpacity: 1,
                     strokeLinecap: "round",
+                    strokeDasharray: strokeDasharray,
                     fill: "none",
                 }}
             />
@@ -95,11 +102,12 @@ export default function ArchEdge({
             path={fallbackPath}
             markerEnd={markerEnd}
             style={{
-                stroke: "#636798",
-                strokeWidth: 2,
+                stroke: strokeColor,
+                strokeWidth: strokeWidth,
                 strokeOpacity: 1,
-                strokeDasharray: "6 6",
+                strokeDasharray: strokeDasharray,
                 strokeLinecap: "round",
+                fill: "none",
             }}
         />
     );

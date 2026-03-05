@@ -150,10 +150,12 @@ export default function CanvasArea() {
 
     const onConnect = useCallback(
         (connection: Connection) => {
+            const { edgeStyle } = useCanvasStore.getState();
             const newEdge: Edge = {
                 ...connection,
                 type: "archEdge",
                 id: `e-${Date.now()}`,
+                data: { edgeStyle },
                 markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" }
             } as Edge;
             setEdges((eds) => addEdge(newEdge, eds));
@@ -166,6 +168,20 @@ export default function CanvasArea() {
         const timeout = setTimeout(() => triggerSave(), 800);
         return () => clearTimeout(timeout);
     }, [triggerSave]);
+
+    const onNodesDelete = useCallback(() => {
+        setTimeout(() => {
+            storeSetNodes(getNodes());
+            triggerSave();
+        }, 0);
+    }, [storeSetNodes, getNodes, triggerSave]);
+
+    const onEdgesDelete = useCallback(() => {
+        setTimeout(() => {
+            storeSetEdges(getEdges());
+            triggerSave();
+        }, 0);
+    }, [storeSetEdges, getEdges, triggerSave]);
 
     const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
         selectNode(node.id);
@@ -188,6 +204,15 @@ export default function CanvasArea() {
         (e: React.MouseEvent, node: Node) => {
             e.preventDefault();
             setContextMenu({ x: e.clientX, y: e.clientY, type: "node", nodeId: node.id });
+        },
+        [setContextMenu]
+    );
+
+    const onEdgeContextMenu = useCallback(
+        (e: React.MouseEvent, edge: Edge) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setContextMenu({ x: e.clientX, y: e.clientY, type: "edge", edgeId: edge.id });
         },
         [setContextMenu]
     );
@@ -228,11 +253,14 @@ export default function CanvasArea() {
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
+                onNodesDelete={onNodesDelete}
+                onEdgesDelete={onEdgesDelete}
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
                 onPaneClick={onPaneClick}
                 onContextMenu={onContextMenu}
                 onNodeContextMenu={onNodeContextMenu}
+                onEdgeContextMenu={onEdgeContextMenu}
                 onNodeDragStop={onNodeDragStop}
                 onDrop={onDrop}
                 onDragOver={onDragOver}
@@ -260,10 +288,10 @@ export default function CanvasArea() {
                 fitViewOptions={{ padding: 0.12 }}
             >
                 <Background
-                    variant={BackgroundVariant.Lines}
-                    gap={40}
-                    lineWidth={1}
-                    color="rgba(44, 51, 108, 0.2)"
+                    variant={BackgroundVariant.Dots}
+                    gap={24}
+                    size={1.2}
+                    color="#c8cad8"
                 />
             </ReactFlow>
 

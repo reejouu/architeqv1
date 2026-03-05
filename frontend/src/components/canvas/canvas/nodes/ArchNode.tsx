@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Handle, Position, NodeProps, NodeToolbar, useReactFlow } from "@xyflow/react";
+import { Handle, Position, NodeProps, NodeToolbar, NodeResizer, useReactFlow } from "@xyflow/react";
 import { useCanvasStore } from "@/store/canvasStore";
 import { GRAPH_TYPE_CONFIG, STATUS_CONFIG } from "@/lib/graph/graphTransform";
 
@@ -38,7 +38,7 @@ const ToolBtn = ({
     </button>
 );
 
-export default function ArchNode({ id, data, selected }: NodeProps) {
+export default function ArchNode({ id, data, selected, width, height }: NodeProps) {
     // Support both old canvasConstants format (data.type) and new AI JSON format (data.nodeType)
     const nodeType = String(data.nodeType || data.type || "default").toLowerCase();
     const config = GRAPH_TYPE_CONFIG[nodeType] || GRAPH_TYPE_CONFIG.default;
@@ -83,6 +83,26 @@ export default function ArchNode({ id, data, selected }: NodeProps) {
 
     return (
         <>
+            {/* ── Resize handles (visible when selected) ── */}
+            <NodeResizer
+                isVisible={selected}
+                minWidth={140}
+                minHeight={60}
+                lineStyle={{
+                    border: "none",
+                    borderRadius: 0,
+                }}
+                handleStyle={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 0,
+                    background: "#c78caf",
+                    border: "2px solid #2c336c",
+                    boxShadow: "2px 2px 0px 0px #2c336c",
+                    zIndex: 10,
+                }}
+            />
+
             {/* ── Floating toolbar (NodeToolbar = auto pan/zoom aware) ── */}
             <NodeToolbar isVisible={selected} position={Position.Top} offset={14}>
                 <div style={{
@@ -133,93 +153,118 @@ export default function ArchNode({ id, data, selected }: NodeProps) {
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
                 style={{
-                    minWidth: 160,
-                    width: 240,
-                    borderRadius: 12,
+                    width: width ? "100%" : 240,
+                    height: height ? "100%" : undefined,
+                    minWidth: 140,
+                    minHeight: 70,
+                    borderRadius: 14,
                     background: "#ffffff",
-                    border: `3px solid #2c336c`,
-                    boxShadow: selected ? "6px 6px 0px 0px #2c336c" : hovered ? "4px 4px 0px 0px #2c336c" : "2px 2px 0px 0px #2c336c",
+                    border: `2.5px solid #2c336c`,
+                    boxShadow: selected ? "6px 6px 0px 0px #2c336c" : hovered ? "4px 4px 0px 0px #2c336c" : "3px 3px 0px 0px #2c336c",
                     position: "relative",
-                    transition: "all 200ms",
+                    transition: "box-shadow 200ms, transform 200ms",
                     cursor: "pointer",
                     userSelect: "none",
                     overflow: "hidden",
-                    transform: selected ? "translate(-4px, -4px)" : hovered ? "translate(-2px, -2px)" : "translate(0, 0)",
+                    display: "flex",
+                    flexDirection: "column",
+                    transform: selected ? "translate(-5px, -5px)" : hovered ? "translate(-2px, -2px)" : "translate(0, 0)",
+                    boxSizing: "border-box",
                 }}
             >
-                {/* Left accent stripe */}
-                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 8, background: config.color, borderRight: "3px solid #2c336c" }} />
+                {/* ── Colored header band ── */}
+                <div style={{
+                    background: config.color,
+                    borderBottom: "3px solid #2c336c",
+                    padding: "11px 12px 11px 14px",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 8,
+                    flexShrink: 0,
+                }}>
+                    {/* Node label */}
+                    <span style={{
+                        fontSize: 15,
+                        fontWeight: 800,
+                        color: "#ffffff",
+                        flex: 1,
+                        lineHeight: 1.25,
+                        wordBreak: "break-word",
+                        whiteSpace: "normal",
+                        textShadow: "1px 1px 0px rgba(0,0,0,0.25)",
+                        letterSpacing: "0.01em",
+                    }}>
+                        {label}
+                    </span>
 
-                {/* Main content */}
-                <div style={{ padding: "12px 12px 12px 20px" }}>
-                    {/* Label row */}
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#2c336c", flex: 1, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.2 }}>
-                            {label}
-                        </span>
-
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end", flexShrink: 0 }}>
-                            {/* Priority badge */}
-
-
-                            {!!data.priorityScore && (
-                                <div style={{
-                                    width: 24, height: 24, borderRadius: 0,
-                                    background: Number(data.priorityScore) === 1 ? "#EF4444" : Number(data.priorityScore) === 2 ? "#F59E0B" : "#10B981",
-                                    border: "2px solid #2c336c",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: 12, fontWeight: 800, color: "#2c336c",
-                                    boxShadow: "2px 2px 0px 0px #2c336c"
-                                }} title={`Priority: P${String(data.priorityScore || "")}`}>
-                                    P{String(data.priorityScore || "")}
-                                </div>
-                            )}
-
-                            {/* Owner initials badge */}
-                            {owner && (
-                                <div style={{
-                                    width: 24, height: 24, borderRadius: 0,
-                                    background: config.color, border: "2px solid #2c336c",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: 10, fontWeight: 700, color: "#2c336c",
-                                    boxShadow: "2px 2px 0px 0px #2c336c"
-                                }} title={`Owner: ${owner}`}>
-                                    {owner.slice(0, 2).toUpperCase()}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Type + Status row */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        {/* Node type pill */}
-                        <span style={{
-                            fontSize: 11, fontWeight: 700, textTransform: "capitalize",
-                            color: "#f3f3f2", background: "#636798", border: "2px solid #2c336c",
-                            borderRadius: 0, padding: "2px 8px", boxShadow: "1px 1px 0px 0px #2c336c"
-                        }}>
-                            {nodeType}
-                        </span>
-                        {/* Status pill */}
-                        {status && statusStyle && (
-                            <span style={{
-                                fontSize: 11, fontWeight: 700,
-                                color: "#2c336c", background: statusStyle.bg, border: "2px solid #2c336c",
-                                borderRadius: 0, padding: "2px 8px", boxShadow: "1px 1px 0px 0px #2c336c"
-                            }}>
-                                {status}
-                            </span>
+                    {/* Badges (priority + owner) */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end", flexShrink: 0 }}>
+                        {!!data.priorityScore && (
+                            <div style={{
+                                width: 22, height: 22, borderRadius: 0,
+                                background: Number(data.priorityScore) === 1 ? "#EF4444" : Number(data.priorityScore) === 2 ? "#F59E0B" : "#10B981",
+                                border: "2px solid #2c336c",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: 11, fontWeight: 800, color: "#ffffff",
+                                boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)"
+                            }} title={`Priority: P${String(data.priorityScore || "")}`}>
+                                P{String(data.priorityScore || "")}
+                            </div>
                         )}
-                        {/* Owner text (small) */}
                         {owner && (
-                            <span style={{ fontSize: 11, fontWeight: 600, color: "#2c336c", marginLeft: "auto", whiteSpace: "nowrap" }}>
-                                {owner}
-                            </span>
+                            <div style={{
+                                width: 22, height: 22, borderRadius: 0,
+                                background: "#2c336c", border: "2px solid rgba(255,255,255,0.5)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: 10, fontWeight: 700, color: "#ffffff",
+                                boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)"
+                            }} title={`Owner: ${owner}`}>
+                                {owner.slice(0, 2).toUpperCase()}
+                            </div>
                         )}
                     </div>
                 </div>
 
-                {/* Selected pulse ring removed in favor of stark border changes. */}
+                {/* ── White footer strip: type + status ── */}
+                <div style={{
+                    padding: "7px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    flexWrap: "wrap",
+                    flex: 1,
+                    background: "#f3f3f2",
+                }}>
+                    {/* Node type pill */}
+                    <span style={{
+                        fontSize: 11, fontWeight: 800, textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                        color: "#ffffff", background: config.color,
+                        border: "1.5px solid #2c336c",
+                        borderRadius: 6, padding: "3px 9px",
+                        boxShadow: "2px 2px 0px 0px #2c336c",
+                    }}>
+                        {nodeType}
+                    </span>
+                    {/* Status pill */}
+                    {status && statusStyle && (
+                        <span style={{
+                            fontSize: 11, fontWeight: 700,
+                            color: "#2c336c", background: statusStyle.bg,
+                            border: "1.5px solid #2c336c",
+                            borderRadius: 6, padding: "3px 9px",
+                            boxShadow: "1px 1px 0px 0px #2c336c",
+                        }}>
+                            {status}
+                        </span>
+                    )}
+                    {/* Owner text */}
+                    {owner && (
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#636798", marginLeft: "auto", whiteSpace: "nowrap" }}>
+                            {owner}
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* ── 4-Way Handles ── */}

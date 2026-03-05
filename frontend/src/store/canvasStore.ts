@@ -9,8 +9,9 @@ type ActiveMode = "design" | "review" | "export";
 interface ContextMenu {
     x: number;
     y: number;
-    type: "canvas" | "node";
+    type: "canvas" | "node" | "edge";
     nodeId?: string;
+    edgeId?: string;
 }
 
 interface CanvasState {
@@ -28,6 +29,7 @@ interface CanvasState {
     projectName: string;
     hasUnsavedChanges: boolean;
     fitViewTrigger: number;
+    edgeStyle: "solid" | "dashed";
 
     // Actions
     setNodes: (nodes: Node[]) => void;
@@ -42,6 +44,7 @@ interface CanvasState {
     setContextMenu: (menu: ContextMenu | null) => void;
     setProjectName: (name: string) => void;
     setSidebarOpen: (open: boolean) => void;
+    setEdgeStyle: (style: "solid" | "dashed") => void;
     triggerSave: () => void;
     loadGraph: (raw: RawGraph, direction?: "TB" | "LR") => void;
     generateSampleNodes: () => void;
@@ -62,8 +65,18 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     projectName: "Doctor Booking App",
     hasUnsavedChanges: false,
     fitViewTrigger: 0,
+    edgeStyle: "dashed",
 
-    setNodes: (nodes) => set({ nodes, hasUnsavedChanges: true }),
+    setNodes: (nodes) =>
+        set((state) => {
+            const hasChanges = JSON.stringify(nodes) !== JSON.stringify(state.nodes);
+            const selectedNodeExists = state.selectedNodeId ? nodes.some(n => n.id === state.selectedNodeId) : true;
+            return {
+                nodes,
+                hasUnsavedChanges: state.hasUnsavedChanges || hasChanges,
+                ...(!selectedNodeExists ? { selectedNodeId: null, rightPanelOpen: false } : {})
+            };
+        }),
     setEdges: (edges) => set({ edges, hasUnsavedChanges: true }),
 
     addNode: (node) =>
@@ -87,6 +100,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     setContextMenu: (menu) => set({ contextMenu: menu }),
 
     setSidebarOpen: (open) => set({ sidebarOpen: open }),
+
+    setEdgeStyle: (style) => set({ edgeStyle: style }),
 
     setProjectName: (name) =>
         set({ projectName: name, hasUnsavedChanges: true }),

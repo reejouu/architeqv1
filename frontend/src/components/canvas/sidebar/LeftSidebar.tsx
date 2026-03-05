@@ -33,7 +33,7 @@ export default function LeftSidebar() {
         e.dataTransfer.effectAllowed = "move";
     };
 
-    const sidebarWidth = sidebarOpen ? 220 : 48;
+    const sidebarWidth = sidebarOpen ? 260 : 48;
 
     return (
         <div
@@ -44,7 +44,7 @@ export default function LeftSidebar() {
                 bottom: 48,
                 width: sidebarWidth,
                 zIndex: 50,
-                background: "#f3f3f2",
+                background: "#bfb3ca",
                 borderRight: "3px solid #2c336c",
                 display: "flex",
                 flexDirection: "column",
@@ -73,20 +73,20 @@ export default function LeftSidebar() {
                     style={{
                         width: 28, height: 28, borderRadius: 0,
                         border: "2px solid #2c336c",
-                        background: "#c78caf",
+                        background: "#ddb9ac",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         cursor: "pointer", color: "#2c336c", flexShrink: 0,
                         boxShadow: "2px 2px 0px 0px #2c336c",
                         transition: "all 150ms",
                     }}
                     onMouseEnter={e => {
-                        (e.currentTarget as HTMLElement).style.background = "#bf979e";
-                        (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
+                        (e.currentTarget as HTMLElement).style.background = "#c78caf";
+                        (e.currentTarget as HTMLElement).style.transform = "none";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
                     }}
                     onMouseLeave={e => {
-                        (e.currentTarget as HTMLElement).style.background = "#c78caf";
-                        (e.currentTarget as HTMLElement).style.transform = "translate(0, 0)";
+                        (e.currentTarget as HTMLElement).style.background = "#ddb9ac";
+                        (e.currentTarget as HTMLElement).style.transform = "none";
                         (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
                     }}
                 >
@@ -109,20 +109,20 @@ export default function LeftSidebar() {
                             style={{
                                 width: 34, height: 34, borderRadius: 0, margin: "6px auto",
                                 border: `2px solid #2c336c`,
-                                background: `#ffffff`,
+                                background: `#ddb9ac`,
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 color: config.color, cursor: "grab", transition: "all 150ms",
                                 boxShadow: "2px 2px 0px 0px #2c336c"
                             }}
                             onMouseEnter={e => {
                                 const el = e.currentTarget;
-                                el.style.background = "#f3f3f2";
+                                el.style.background = "#c78caf";
                                 el.style.transform = "translate(-2px, -2px)";
                                 el.style.boxShadow = "4px 4px 0px 0px #2c336c";
                             }}
                             onMouseLeave={e => {
                                 const el = e.currentTarget;
-                                el.style.background = "#ffffff";
+                                el.style.background = "#ddb9ac";
                                 el.style.transform = "translate(0px, 0px)";
                                 el.style.boxShadow = "2px 2px 0px 0px #2c336c";
                             }}
@@ -160,22 +160,29 @@ export default function LeftSidebar() {
                             </span>
                         </div>
 
-                        {/* Node cards — single column, no overflow */}
+                        {/* Node cards — 2 column grid */}
                         {paletteOpen && (
-                            <div style={{ padding: "10px 10px 2px", borderBottom: "3px solid #2c336c" }}>
+                            <div style={{
+                                padding: "10px",
+                                borderBottom: "3px solid #2c336c",
+                                display: "grid",
+                                gridTemplateColumns: "repeat(2, 1fr)",
+                                gap: "8px"
+                            }}>
                                 {(Object.entries(NODE_TYPES_CONFIG) as [NodeType, typeof NODE_TYPES_CONFIG[NodeType]][]).map(([type, config]) => (
                                     <div
                                         key={type}
                                         draggable
                                         onDragStart={e => handleDragStart(e, type)}
+                                        title={config.label}
                                         style={{
-                                            height: 38,
-                                            borderRadius: 0,
-                                            border: `2px solid #2c336c`,
-                                            background: `#ffffff`,
+                                            height: 32,
+                                            borderRadius: 6,
+                                            border: `1.5px solid #2c336c`,
+                                            background: `#f3f3f2`,
                                             boxShadow: "2px 2px 0px 0px #2c336c",
-                                            display: "flex", alignItems: "center", gap: 9,
-                                            padding: "0 10px", marginBottom: 8,
+                                            display: "flex", alignItems: "center", gap: 6,
+                                            padding: "0 6px",
                                             cursor: "grab", userSelect: "none",
                                             transition: "all 150ms",
                                             width: "100%", boxSizing: "border-box",
@@ -184,31 +191,23 @@ export default function LeftSidebar() {
                                             const el = e.currentTarget;
                                             el.style.transform = "translate(-2px, -2px)";
                                             el.style.boxShadow = "4px 4px 0px 0px #2c336c";
-                                            el.style.background = "#f3f3f2";
+                                            el.style.background = "#ddb9ac";
                                         }}
                                         onMouseLeave={e => {
                                             const el = e.currentTarget;
                                             el.style.transform = "translate(0px, 0px)";
                                             el.style.boxShadow = "2px 2px 0px 0px #2c336c";
-                                            el.style.background = "#ffffff";
+                                            el.style.background = "#f3f3f2";
                                         }}
                                     >
-                                        {/* Color dot */}
-                                        <div style={{ width: 10, height: 10, borderRadius: 0, border: "2px solid #2c336c", background: config.color, flexShrink: 0 }} />
-                                        {/* Icon */}
-                                        <span style={{ color: "#2c336c", flexShrink: 0, lineHeight: 0 }}>
-                                            {ICONS[config.icon]}
+                                        {/* Icon (colored by node type) */}
+                                        <span style={{ color: config.color, flexShrink: 0, display: "flex", alignItems: "center" }}>
+                                            {React.cloneElement(ICONS[config.icon] as React.ReactElement<any>, { width: 12, height: 12, strokeWidth: 2.5 })}
                                         </span>
                                         {/* Label */}
-                                        <span style={{ fontSize: 13, fontWeight: 700, color: "#2c336c", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        <span style={{ fontSize: 11, fontWeight: 800, color: "#2c336c", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                             {config.label}
                                         </span>
-                                        {/* Drag handle hint */}
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2c336c" strokeWidth="3" style={{ flexShrink: 0 }}>
-                                            <circle cx="9" cy="7" r="1.5" fill="currentColor" /><circle cx="15" cy="7" r="1.5" fill="currentColor" />
-                                            <circle cx="9" cy="12" r="1.5" fill="currentColor" /><circle cx="15" cy="12" r="1.5" fill="currentColor" />
-                                            <circle cx="9" cy="17" r="1.5" fill="currentColor" /><circle cx="15" cy="17" r="1.5" fill="currentColor" />
-                                        </svg>
                                     </div>
                                 ))}
                             </div>
@@ -227,11 +226,11 @@ export default function LeftSidebar() {
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
                                 cursor: "pointer", userSelect: "none",
                                 borderBottom: "3px solid #2c336c",
-                                background: "#bfb3ca",
+                                background: "#ddb9ac",
                                 flexShrink: 0,
                             }}
                             onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#c78caf"}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#bfb3ca"}
+                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#ddb9ac"}
                         >
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                 <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#2c336c" }}>
@@ -239,9 +238,9 @@ export default function LeftSidebar() {
                                 </span>
                                 {nodes.length > 0 && (
                                     <span style={{
-                                        fontSize: 11, fontWeight: 700, background: "#ffffff",
-                                        border: "2px solid #2c336c",
-                                        color: "#2c336c", borderRadius: 0, padding: "2px 6px",
+                                        fontSize: 11, fontWeight: 700, background: "#3d4270",
+                                        border: "2px solid #4a5090",
+                                        color: "#c8cbe8", borderRadius: 0, padding: "2px 6px",
                                     }}>{nodes.length}</span>
                                 )}
                             </div>
@@ -253,7 +252,7 @@ export default function LeftSidebar() {
                         {layersOpen && (
                             <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "10px 0 8px" }}>
                                 {nodes.length === 0 && (
-                                    <div style={{ padding: "12px 16px", fontSize: 13, color: "#636798", fontWeight: 700, textAlign: "center" }}>
+                                    <div style={{ padding: "12px 16px", fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 700, textAlign: "center" }}>
                                         No nodes yet
                                     </div>
                                 )}
@@ -274,31 +273,31 @@ export default function LeftSidebar() {
                                                 boxShadow: isSelected ? "4px 4px 0px 0px #2c336c" : "2px 2px 0px 0px #2c336c",
                                                 cursor: "pointer", fontSize: 13, fontWeight: 700,
                                                 color: "#2c336c",
-                                                background: isSelected ? "#ddb9ac" : "#ffffff",
+                                                background: isSelected ? "#c78caf" : "#f3f3f2",
                                                 transition: "all 150ms",
                                                 transform: isSelected ? "translate(-2px, -2px)" : "translate(0, 0)",
                                             }}
                                             onMouseEnter={e => {
                                                 if (!isSelected) {
-                                                    (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
+                                                    (e.currentTarget as HTMLElement).style.background = "#ddb9ac";
                                                     (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
                                                     (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
                                                 }
                                             }}
                                             onMouseLeave={e => {
                                                 if (!isSelected) {
-                                                    (e.currentTarget as HTMLElement).style.background = "#ffffff";
+                                                    (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
                                                     (e.currentTarget as HTMLElement).style.transform = "translate(0px, 0px)";
                                                     (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
                                                 }
                                             }}
                                         >
-                                            <div style={{ width: 8, height: 8, borderRadius: 0, border: "2px solid #2c336c", background: config?.color || "#52525B", flexShrink: 0 }} />
+                                            <div style={{ width: 8, height: 8, borderRadius: 0, border: "2px solid #4a5090", background: config?.color || "#52525B", flexShrink: 0 }} />
                                             <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                                 {String(node.data.label || node.id)}
                                             </span>
                                             {isSelected && (
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2c336c" strokeWidth="3">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6c73b8" strokeWidth="3">
                                                     <polyline points="20 6 9 17 4 12" />
                                                 </svg>
                                             )}

@@ -23,10 +23,10 @@ const ModeButton = ({
             fontWeight: 700,
             cursor: "pointer",
             transition: "all 150ms ease",
-            border: active ? "2px solid #2c336c" : "2px solid transparent",
-            background: active ? "#ddb9ac" : "transparent",
-            color: active ? "#2c336c" : "#85755e",
-            boxShadow: active ? "2px 2px 0px 0px #2c336c" : "none",
+            border: active ? "2px solid #c78caf" : "2px solid transparent",
+            background: active ? "#c78caf" : "transparent",
+            color: active ? "#2c336c" : "#f3f3f2",
+            boxShadow: active ? "2px 2px 0px 0px rgba(0,0,0,0.25)" : "none",
         }}
     >
         {label}
@@ -43,6 +43,8 @@ export default function Toolbar() {
         saveStatus,
         hasUnsavedChanges,
         triggerSave,
+        edgeStyle,
+        setEdgeStyle,
     } = useCanvasStore();
 
     const [editingName, setEditingName] = useState(false);
@@ -62,7 +64,7 @@ export default function Toolbar() {
                 right: 0,
                 height: 64,
                 zIndex: 100,
-                background: "#f3f3f2",
+                background: "#636798",
                 borderBottom: "3px solid #2c336c",
                 display: "flex",
                 alignItems: "center",
@@ -83,25 +85,25 @@ export default function Toolbar() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#636798",
+                        color: "#f3f3f2",
                         cursor: "pointer",
                         transition: "all 150ms",
                         textDecoration: "none",
                         flexShrink: 0,
                     }}
                     onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "#ddb9ac";
-                        (e.currentTarget as HTMLElement).style.color = "#2c336c";
-                        (e.currentTarget as HTMLElement).style.border = "2px solid #2c336c";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
-                        (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
+                        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.15)";
+                        (e.currentTarget as HTMLElement).style.color = "#f3f3f2";
+                        (e.currentTarget as HTMLElement).style.border = "2px solid rgba(255,255,255,0.3)";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                        (e.currentTarget as HTMLElement).style.transform = "none";
                     }}
                     onMouseLeave={(e) => {
                         (e.currentTarget as HTMLElement).style.background = "transparent";
-                        (e.currentTarget as HTMLElement).style.color = "#636798";
+                        (e.currentTarget as HTMLElement).style.color = "#f3f3f2";
                         (e.currentTarget as HTMLElement).style.border = "2px solid transparent";
                         (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                        (e.currentTarget as HTMLElement).style.transform = "translate(0px, 0px)";
+                        (e.currentTarget as HTMLElement).style.transform = "none";
                     }}
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -111,8 +113,8 @@ export default function Toolbar() {
 
                 {/* Breadcrumb */}
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 13, color: "#636798", fontWeight: 700 }}>Architeq</span>
-                    <span style={{ fontSize: 13, color: "#2c336c" }}>/</span>
+                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontWeight: 700 }}>Architeq</span>
+                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>/</span>
                     {editingName ? (
                         <input
                             autoFocus
@@ -124,9 +126,9 @@ export default function Toolbar() {
                                 fontSize: 13,
                                 fontWeight: 700,
                                 color: "#2c336c",
-                                background: "#ffffff",
+                                background: "#f3f3f2",
                                 border: "2px solid #2c336c",
-                                boxShadow: "2px 2px 0px 0px #2c336c",
+                                boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
                                 outline: "none",
                                 padding: "2px 6px",
                                 width: Math.max(100, nameInput.length * 8 + 12),
@@ -135,7 +137,7 @@ export default function Toolbar() {
                     ) : (
                         <span
                             onClick={() => setEditingName(true)}
-                            style={{ fontSize: 13, fontWeight: 700, color: "#2c336c", cursor: "text" }}
+                            style={{ fontSize: 13, fontWeight: 700, color: "#f3f3f2", cursor: "text" }}
                         >
                             {projectName}
                         </span>
@@ -149,7 +151,7 @@ export default function Toolbar() {
                                 width: 8,
                                 height: 8,
                                 borderRadius: 0,
-                                background: "#bf979e",
+                                background: "#c78caf",
                                 border: "1px solid #2c336c",
                                 flexShrink: 0,
                             }}
@@ -161,10 +163,10 @@ export default function Toolbar() {
             {/* CENTER ZONE — Mode Switcher */}
             <div
                 style={{
-                    background: "#ffffff",
-                    border: "2px solid #2c336c",
-                    borderRadius: 0,
-                    boxShadow: "4px 4px 0px 0px #2c336c",
+                    background: "rgba(0,0,0,0.2)",
+                    border: "2px solid rgba(255,255,255,0.25)",
+                    borderRadius: 4,
+                    boxShadow: "none",
                     padding: 3,
                     display: "flex",
                     gap: 2,
@@ -176,6 +178,29 @@ export default function Toolbar() {
                         label={mode.charAt(0).toUpperCase() + mode.slice(1)}
                         active={activeMode === mode}
                         onClick={() => setActiveMode(mode)}
+                    />
+                ))}
+            </div>
+
+            {/* Edge Style Switcher */}
+            <div
+                style={{
+                    background: "rgba(0,0,0,0.2)",
+                    border: "2px solid rgba(255,255,255,0.25)",
+                    borderRadius: 4,
+                    boxShadow: "none",
+                    padding: 3,
+                    display: "flex",
+                    gap: 2,
+                    marginLeft: 16,
+                }}
+            >
+                {(["solid", "dashed"] as const).map((style) => (
+                    <ModeButton
+                        key={style}
+                        label={style.charAt(0).toUpperCase() + style.slice(1)}
+                        active={edgeStyle === style}
+                        onClick={() => setEdgeStyle(style)}
                     />
                 ))}
             </div>
@@ -193,7 +218,7 @@ export default function Toolbar() {
                                 height: 28,
                                 borderRadius: "50%",
                                 background: c.color,
-                                border: "2px solid #2c336c",
+                                border: "2px solid #3d4270",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -212,7 +237,7 @@ export default function Toolbar() {
                 </div>
 
                 {/* Divider */}
-                <div style={{ width: 2, height: 24, background: "#2c336c", margin: "0 8px" }} />
+                <div style={{ width: 1, height: 24, background: "rgba(255,255,255,0.3)", margin: "0 8px" }} />
 
                 {/* Share button */}
                 <button
@@ -220,27 +245,27 @@ export default function Toolbar() {
                         height: 32,
                         padding: "0 14px",
                         borderRadius: 0,
-                        border: "2px solid #2c336c",
-                        background: "#bfb3ca",
-                        color: "#2c336c",
+                        border: "2px solid rgba(255,255,255,0.3)",
+                        background: "rgba(255,255,255,0.1)",
+                        color: "#f3f3f2",
                         fontSize: 13,
                         fontWeight: 700,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
                         gap: 6,
-                        boxShadow: "4px 4px 0px 0px #2c336c",
+                        boxShadow: "none",
                         transition: "all 150ms",
                     }}
                     onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "#c78caf";
-                        (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "6px 6px 0px 0px #2c336c";
+                        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.2)";
+                        (e.currentTarget as HTMLElement).style.transform = "none";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "none";
                     }}
                     onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "#bfb3ca";
+                        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
                         (e.currentTarget as HTMLElement).style.transform = "translate(0, 0)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "none";
                     }}
                 >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -260,7 +285,7 @@ export default function Toolbar() {
                         border: "2px solid #2c336c",
                         background: "#c78caf",
                         color: "#2c336c",
-                        boxShadow: "4px 4px 0px 0px #2c336c",
+                        boxShadow: "3px 3px 0px 0px rgba(0,0,0,0.25)",
                         fontSize: 13,
                         fontWeight: 700,
                         cursor: "pointer",
@@ -271,13 +296,13 @@ export default function Toolbar() {
                     }}
                     onMouseEnter={(e) => {
                         (e.currentTarget as HTMLElement).style.background = "#bf979e";
-                        (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "6px 6px 0px 0px #2c336c";
+                        (e.currentTarget as HTMLElement).style.transform = "translate(-1px, -1px)";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "5px 5px 0px 0px rgba(0,0,0,0.25)";
                     }}
                     onMouseLeave={(e) => {
                         (e.currentTarget as HTMLElement).style.background = "#c78caf";
                         (e.currentTarget as HTMLElement).style.transform = "translate(0px, 0px)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "3px 3px 0px 0px rgba(0,0,0,0.25)";
                     }}
                 >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -295,7 +320,7 @@ export default function Toolbar() {
                     style={{
                         fontSize: 12,
                         fontWeight: 700,
-                        color: "#636798",
+                        color: "#f3f3f2",
                         background: "transparent",
                         border: "none",
                         cursor: "pointer",

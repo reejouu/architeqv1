@@ -22,25 +22,25 @@ const IconBtn = ({
             width: 32,
             height: 32,
             borderRadius: 0,
-            border: "2px solid #2c336c",
-            background: active ? "#c78caf" : "#ffffff",
-            color: "#2c336c",
+            border: "2px solid rgba(255,255,255,0.25)",
+            background: active ? "#c78caf" : "rgba(255,255,255,0.1)",
+            color: active ? "#2c336c" : "#f3f3f2",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             transition: "all 150ms",
-            boxShadow: "2px 2px 0px 0px #2c336c"
+            boxShadow: "none"
         }}
         onMouseEnter={(e) => {
-            if (!active) (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
-            (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
-            (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
+            if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.25)";
+            (e.currentTarget as HTMLElement).style.transform = "none";
+            (e.currentTarget as HTMLElement).style.boxShadow = "none";
         }}
         onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = active ? "#c78caf" : "#ffffff";
-            (e.currentTarget as HTMLElement).style.transform = "translate(0, 0)";
-            (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
+            (e.currentTarget as HTMLElement).style.background = active ? "#c78caf" : "rgba(255,255,255,0.1)";
+            (e.currentTarget as HTMLElement).style.transform = "none";
+            (e.currentTarget as HTMLElement).style.boxShadow = "none";
         }}
     >
         {children}
@@ -66,7 +66,7 @@ export default function BottomBar() {
                 right: 0,
                 height: 48,
                 zIndex: 100,
-                background: "#f3f3f2",
+                background: "#636798",
                 borderTop: "3px solid #2c336c",
                 display: "flex",
                 alignItems: "center",
@@ -80,7 +80,7 @@ export default function BottomBar() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 </IconBtn>
                 <span
-                    style={{ fontSize: 13, fontWeight: 800, color: "#2c336c", minWidth: 44, textAlign: "center", cursor: "pointer" }}
+                    style={{ fontSize: 13, fontWeight: 800, color: "#f3f3f2", minWidth: 44, textAlign: "center", cursor: "pointer" }}
                     title="Click to enter zoom %"
                 >
                     {zoom}%
@@ -101,46 +101,15 @@ export default function BottomBar() {
                 </IconBtn>
             </div>
 
-            {/* CENTER — Inline minimap */}
-            <div
-                style={{
-                    width: 160,
-                    height: 32,
-                    background: "#ffffff",
-                    border: "2px solid #2c336c",
-                    borderRadius: 0,
-                    overflow: "hidden",
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "inset 2px 2px 0px 0px rgba(44, 51, 108, 0.1)"
-                }}
-            >
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#636798" }}>minimap</span>
-                {/* Viewport rect indicator */}
-                <div
-                    style={{
-                        position: "absolute",
-                        top: "20%",
-                        left: "20%",
-                        width: "60%",
-                        height: "60%",
-                        border: "2px solid #2c336c",
-                        background: "rgba(199, 140, 175, 0.2)",
-                        borderRadius: 0,
-                    }}
-                />
-            </div>
 
             {/* RIGHT — Node count + status */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#2c336c" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#f3f3f2" }}>
                     {nodes.length} node{nodes.length !== 1 ? "s" : ""} · {edges.length} edge{edges.length !== 1 ? "s" : ""}
                 </span>
                 <div
                     title="Connected · auto-saving"
-                    style={{ width: 10, height: 10, borderRadius: "50%", background: "#10B981", border: "2px solid #2c336c", cursor: "default" }}
+                    style={{ width: 10, height: 10, borderRadius: "50%", background: "#10B981", border: "2px solid rgba(255,255,255,0.3)", cursor: "default" }}
                 />
                 <IconBtn title="Keyboard shortcuts">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
