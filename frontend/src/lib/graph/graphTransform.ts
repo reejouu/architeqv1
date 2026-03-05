@@ -1,6 +1,5 @@
 import type { Node, Edge } from "@xyflow/react";
 import { MarkerType } from "@xyflow/react";
-import { getLayoutedElements } from "./layout";
 import { computeLayout, type InputNode, type InputEdge } from "./engine";
 
 // ─── AI Agent JSON schema ─────────────────────────────────────────────────────
@@ -73,7 +72,6 @@ export const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
     "Blocked": { color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
 };
 
-
 // ─── Transform ────────────────────────────────────────────────────────────────
 
 /**
@@ -119,116 +117,78 @@ export function transformGraph(
         };
     });
 
-    const hasLayers = enrichedNodes.every(n => typeof n.layer === "number");
+    const inputNodes: InputNode[] = enrichedNodes.map(n => ({
+        id: n.id,
+        label: n.label,
+        type: (n.type || "default").toLowerCase(),
+        layer: n.layer ?? 0,
+        column: n.column ?? 0,
+        owner: n.owner,
+        status: n.status,
+        description: n.description,
+        group: n.group,
+        category: n.category,
+        handles: n.handles,
+        order: n.order,
+    }));
 
-    // ── Fast path: use position engine when layer data is available ──
-    if (hasLayers) {
-        const inputNodes: InputNode[] = enrichedNodes.map(n => ({
-            id: n.id,
-            label: n.label,
-            type: (n.type || "default").toLowerCase(),
-            layer: n.layer ?? 0,
-            column: n.column ?? 0,
-            owner: n.owner,
-            status: n.status,
-            description: n.description,
-            group: n.group,
-            category: n.category,
-            handles: n.handles,
-            order: n.order,
-        }));
+    const inputEdges: InputEdge[] = raw.edges.map(e => ({
+        from: e.from,
+        to: e.to,
+        label: e.label,
+        type: e.type,
+        lane: e.lane,
+    }));
 
-        const inputEdges: InputEdge[] = raw.edges.map(e => ({
-            from: e.from,
-            to: e.to,
-            label: e.label,
-            type: e.type,
-            lane: e.lane,
-        }));
+    const layout = computeLayout(inputNodes, inputEdges);
 
-        const layout = computeLayout(inputNodes, inputEdges);
-
-        // Convert to React Flow format
-        const rfNodes: Node[] = layout.nodes.map(n => ({
-            id: n.id,
-            type: "archNode",
-            position: n.position,
-            data: {
-                label: n.data.label || "",
-                nodeType: n.data.type || "default",
-                owner: n.data.owner || "",
-                status: n.data.status || "",
-                description: n.data.description || "",
-                layer: n.data.layer,
-                column: n.data.column,
-                order: n.data.order,
-                group: n.data.group || "",
-                category: n.data.category || "",
-                handles: n.data.handles || ["top", "right", "bottom", "left"],
-                priorityScore: (n as any).priorityScore, // if needed by ArchNode
-            },
-        }));
-
-        const rfEdges: Edge[] = layout.edges.map(le => {
-            return {
-                id: le.id,
-                source: le.source,
-                target: le.target,
-                sourceHandle: "bottom",
-                targetHandle: "top",
-                type: le.type === "smoothstep" ? "smoothstep" : "smoothstep",
-                style: le.style,
-                markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" },
-                pathOptions: {
-                    offset: 20 + Math.abs(le.data.parallelOffset || 0),
-                    borderRadius: 12,
-                },
-                data: {
-                    exitPoint: le.data.exitPoint,
-                    entryPoint: le.data.entryPoint,
-                    waypoints: le.data.waypoints,
-                    parallelOffset: le.data.parallelOffset,
-                },
-            };
-        });
-
-        return { nodes: rfNodes, edges: rfEdges };
-    }
-
-    // ── Fallback: Dagre layout for nodes without layer/column ──
-    const rfNodes: Node[] = enrichedNodes.map((n) => ({
+    // Convert to React Flow format
+    const rfNodes: Node[] = layout.nodes.map(n => ({
         id: n.id,
         type: "archNode",
-        position: { x: 0, y: 0 },
+        position: n.position,
         data: {
-            label: n.label,
-            nodeType: (n.type || "default").toLowerCase(),
-            owner: n.owner || "",
-            status: n.status || "",
-            description: n.description || "",
-            layer: typeof n.layer === "number" ? n.layer : undefined,
-            column: typeof n.column === "number" ? n.column : undefined,
-            order: typeof n.order === "number" ? n.order : undefined,
-            group: n.group || "",
-            category: n.category || "",
-            handles: n.handles || ["top", "right", "bottom", "left"],
-            priorityScore: (n as any).priorityScore,
+            label: n.data.label || "",
+            nodeType: n.data.type || "default",
+            owner: n.data.owner || "",
+            status: n.data.status || "",
+            description: n.data.description || "",
+            layer: n.data.layer,
+            column: n.data.column,
+            order: n.data.order,
+            group: n.data.group || "",
+            category: n.data.category || "",
+            handles: n.data.handles || ["top", "right", "bottom", "left"],
+            priorityScore: (n as any).priorityScore, // if needed by ArchNode
         },
     }));
 
-    const rfEdges: Edge[] = raw.edges.map((e, i) => ({
-        id: `e${i}-${e.from}-${e.to}`,
-        source: e.from,
-        target: e.to,
-        type: "smoothstep",
-        label: e.label,
-        style: { stroke: "#636798", strokeWidth: 1.5 },
-        markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" },
-        data: {
-            lane: typeof e.lane === "number" ? e.lane : 0,
-        },
-    }));
+    const rfEdges: Edge[] = layout.edges.map(le => {
+        const exitPort = (le.data as any).exitPort || "bottom";
+        const entryPort = (le.data as any).entryPort || "top";
+        return {
+            id: le.id,
+            source: le.source,
+            target: le.target,
+            sourceHandle: exitPort,
+            targetHandle: entryPort,
+            type: "archEdge",
+            style: le.style,
+            markerEnd: { type: MarkerType.ArrowClosed, color: "#636798" },
+            data: {
+                exitPoint: le.data.exitPoint,
+                entryPoint: le.data.entryPoint,
+                waypoints: le.data.waypoints,
+                parallelOffset: le.data.parallelOffset,
+                exitOffset: le.data.exitOffset,
+                entryOffset: le.data.entryOffset,
+                exitPort,
+                entryPort,
+                routingType: le.type,
+            },
+        };
+    });
 
-    return getLayoutedElements(rfNodes, rfEdges, direction);
+    return { nodes: rfNodes, edges: rfEdges };
 }
 

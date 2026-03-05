@@ -115,6 +115,8 @@ export function phase0_sanitize(
         waypoints: [],
         exitPoint: { x: 0, y: 0 },
         entryPoint: { x: 0, y: 0 },
+        exitPort: "bottom" as const,
+        entryPort: "top" as const,
         routingType: "smoothstep",
         parallelOffset: 0,
         synthetic: !!e.synthetic,

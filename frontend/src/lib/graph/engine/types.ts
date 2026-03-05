@@ -8,6 +8,7 @@ export interface InputNode {
 export interface InputEdge {
     from: string;
     to: string;
+    synthetic?: boolean;
     [key: string]: any;
 }
 
@@ -27,6 +28,7 @@ export interface InternalNode {
     column: number;
     x: number;
     y: number;
+    routingPressure?: number;   // how many long-range edges pass through this node's layer band
     raw: InputNode;
 }
 
@@ -36,6 +38,10 @@ export interface InternalEdge {
     waypoints: { x: number; y: number }[];
     exitPoint: { x: number; y: number };
     entryPoint: { x: number; y: number };
+    exitOffset?: { dx: number; dy: number };
+    entryOffset?: { dx: number; dy: number };
+    exitPort: "top" | "bottom" | "left" | "right";
+    entryPort: "top" | "bottom" | "left" | "right";
     routingType: "smoothstep" | "orthogonal" | "orthogonal-waypoint";
     parallelOffset: number;
     synthetic: boolean;
@@ -57,6 +63,10 @@ export interface LayoutOutput {
         data: {
             exitPoint: { x: number; y: number };
             entryPoint: { x: number; y: number };
+            exitOffset?: { dx: number; dy: number };
+            entryOffset?: { dx: number; dy: number };
+            exitPort: string;
+            entryPort: string;
             waypoints: { x: number; y: number }[];
             parallelOffset: number;
         };
@@ -73,10 +83,10 @@ export interface LayoutOutput {
 }
 
 export interface LayerStats {
-    layerMap: Map<number, InternalNode[]>; // layer -> nodes
-    sortedLayers: number[];                // distinct layers sorted asc
-    anchorLayer: number;                   // layer with the most nodes
+    layerMap: Map<number, InternalNode[]>;
+    sortedLayers: number[];
+    anchorLayer: number;
     maxNodesInLayer: number;
-    contentWidth: number;                  // bounding box width
-    contentHeight: number;                 // bounding box height
+    contentWidth: number;
+    contentHeight: number;
 }
