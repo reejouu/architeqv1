@@ -10,6 +10,7 @@ export default function HeroSection() {
                     <span className="eyebrow-label mb-6 text-[#2c336c]">AI Architecture Platform</span>
                     <h1 className="text-5xl lg:text-[72px] font-black leading-[1.05] tracking-tight mb-6 text-[#f3f3f2] outline-none">
                         Design your system <i className="text-gradient not-italic">before</i> you build it
+                        
                     </h1>
                     <p className="text-xl font-bold text-[#bfb3ca] max-w-[420px] mb-10 border-l-4 border-accentPurple pl-4">
                         Turn ideas into visual, build-ready architecture

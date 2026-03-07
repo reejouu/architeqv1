@@ -22,6 +22,7 @@ interface CanvasState {
     sidebarOpen: boolean;
     activeMode: ActiveMode;
     saveStatus: SaveStatus;
+    isLocked: boolean;
     isGenerateModalOpen: boolean;
     isGenerating: boolean;
     generatingMessage: string;
@@ -30,6 +31,9 @@ interface CanvasState {
     hasUnsavedChanges: boolean;
     fitViewTrigger: number;
     edgeStyle: "solid" | "dashed";
+    fontStyle: "normal" | "bold" | "italic";
+    nodeColor: string;
+    selectedEdgeIds: string[];
 
     // Actions
     setNodes: (nodes: Node[]) => void;
@@ -38,6 +42,7 @@ interface CanvasState {
     selectNode: (id: string | null) => void;
     setActiveMode: (mode: ActiveMode) => void;
     setSaveStatus: (status: SaveStatus) => void;
+    setIsLocked: (locked: boolean) => void;
     openGenerateModal: () => void;
     closeGenerateModal: () => void;
     setIsGenerating: (isGenerating: boolean, message?: string) => void;
@@ -45,6 +50,9 @@ interface CanvasState {
     setProjectName: (name: string) => void;
     setSidebarOpen: (open: boolean) => void;
     setEdgeStyle: (style: "solid" | "dashed") => void;
+    setFontStyle: (style: "normal" | "bold" | "italic") => void;
+    setNodeColor: (color: string) => void;
+    setSelectedEdges: (ids: string[]) => void;
     triggerSave: () => void;
     loadGraph: (raw: RawGraph, direction?: "TB" | "LR") => void;
     generateSampleNodes: () => void;
@@ -58,6 +66,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     sidebarOpen: true,
     activeMode: "design",
     saveStatus: "idle",
+    isLocked: false,
     isGenerateModalOpen: false,
     isGenerating: false,
     generatingMessage: "",
@@ -65,7 +74,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     projectName: "Doctor Booking App",
     hasUnsavedChanges: false,
     fitViewTrigger: 0,
-    edgeStyle: "dashed",
+    edgeStyle: "solid",
+    fontStyle: "normal",
+    nodeColor: "#ffffff",
+    selectedEdgeIds: [],
 
     setNodes: (nodes) =>
         set((state) => {
@@ -86,9 +98,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         })),
 
     selectNode: (id) =>
-        set({ selectedNodeId: id, rightPanelOpen: id !== null }),
+        set({ selectedNodeId: id }),
+
+    setIsLocked: (locked) => set({ isLocked: locked }),
 
     setActiveMode: (mode) => set({ activeMode: mode }),
+
 
     setSaveStatus: (status) => set({ saveStatus: status }),
 
@@ -101,7 +116,28 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
     setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
-    setEdgeStyle: (style) => set({ edgeStyle: style }),
+    setEdgeStyle: (style) => set((state) => {
+        const edges = state.edges.map(e => 
+            state.selectedEdgeIds.includes(e.id) ? { ...e, data: { ...e.data, edgeStyle: style } } : e
+        );
+        return { edgeStyle: style, edges, hasUnsavedChanges: true };
+    }),
+
+    setFontStyle: (style) => set((state) => {
+        const nodes = state.nodes.map(n => 
+            n.id === state.selectedNodeId ? { ...n, data: { ...n.data, fontStyle: style } } : n
+        );
+        return { fontStyle: style, nodes, hasUnsavedChanges: true };
+    }),
+
+    setNodeColor: (color) => set((state) => {
+        const nodes = state.nodes.map(n => 
+            n.id === state.selectedNodeId ? { ...n, data: { ...n.data, nodeColor: color } } : n
+        );
+        return { nodeColor: color, nodes, hasUnsavedChanges: true };
+    }),
+    
+    setSelectedEdges: (ids) => set({ selectedEdgeIds: ids }),
 
     setProjectName: (name) =>
         set({ projectName: name, hasUnsavedChanges: true }),

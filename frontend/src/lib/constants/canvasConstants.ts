@@ -1,4 +1,20 @@
 // Node type definitions, colors, and icons mapping
+
+export const COLOR_PALETTE = [
+  // Neutral
+  "#f3f3f2", // Off-white
+
+  // Architeq Subtle Graph Theme
+  "#7b6fa8", // Core (Muted Purple)
+  "#5e8f9e", // Integration (Muted Teal)
+  "#6a9f7c", // Service (Muted Green)
+  "#5d7ea8", // Database (Muted Blue)
+  "#b89550", // Frontend (Muted Gold)
+  "#a87090", // Queue (Muted Rose)
+  "#c07858", // Cache (Muted Rust)
+  "#b06878", // Infra (Muted Red)
+  "#b08840", // Input (Muted Bronze)
+];
 export const NODE_TYPES_CONFIG = {
     auth: {
         label: "Auth",
