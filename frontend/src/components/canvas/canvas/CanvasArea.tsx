@@ -224,6 +224,9 @@ export default function CanvasArea() {
           width: prev?.width ?? storeNode.width,
           height: prev?.height ?? storeNode.height,
           selectable: interactionMode !== "drawEdge",
+          // Preserve React Flow's own selection state so editing data never
+          // triggers a spurious deselection event.
+          selected: prev?.selected,
         };
       }),
     );
@@ -398,6 +401,14 @@ export default function CanvasArea() {
 
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes, edges: selectedEdges }: { nodes: Node[]; edges: Edge[] }) => {
+      // Ignore spurious "deselect all" events that can fire when the storeNodes
+      // sync effect replaces nodes during a panel edit. If the panel is open and
+      // a node is still pinned as selected in the store, this is not a real
+      // user-initiated deselection.
+      if (selectedNodes.length === 0) {
+        const { rightPanelOpen, selectedNodeId } = useCanvasStore.getState();
+        if (rightPanelOpen && selectedNodeId) return;
+      }
       setSelectedNodeIds(selectedNodes.map((n) => n.id));
       setSelectedEdges(selectedEdges.map((e) => e.id));
     },

@@ -394,35 +394,7 @@ export default function ArchNode({
                   P{String(data.priorityScore || "")}
                 </div>
               )}
-              {owner && (
-                <div
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 0,
-                    background: "#2c336c",
-                    border: "2px solid rgba(255,255,255,0.5)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    fontFamily:
-                      fontFamily === "comic"
-                        ? "ComicNeueSansID, sans-serif"
-                        : fontFamily === "montserrat"
-                          ? "Montserrat, sans-serif"
-                          : fontFamily === "poppins"
-                            ? "Poppins, sans-serif"
-                            : "var(--font-inter)",
-                    color: "#ffffff",
-                    boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
-                  }}
-                  title={`Owner: ${owner}`}
-                >
-                  {owner.slice(0, 2).toUpperCase()}
-                </div>
-              )}
+
             </div>
           </div>
 
@@ -488,28 +460,7 @@ export default function ArchNode({
                 {status}
               </span>
             )}
-            {/* Owner text */}
-            {owner && (
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  fontFamily:
-                    fontFamily === "comic"
-                      ? "ComicNeueSansID, sans-serif"
-                      : fontFamily === "montserrat"
-                        ? "Montserrat, sans-serif"
-                        : fontFamily === "poppins"
-                          ? "Poppins, sans-serif"
-                          : "var(--font-inter)",
-                  color: "#636798",
-                  marginLeft: "auto",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {owner}
-              </span>
-            )}
+
           </div>
         </div>
 
@@ -525,6 +476,7 @@ export default function ArchNode({
             height: 40,
             border: "none",
             zIndex: 9,
+            cursor: interactionMode === "drawEdge" ? "crosshair" : "default",
           }}
         />
         <Handle
@@ -540,6 +492,7 @@ export default function ArchNode({
             alignItems: "center",
             justifyContent: "center",
             zIndex: 10,
+            cursor: interactionMode === "drawEdge" ? "crosshair" : "default",
           }}
         >
           <div
@@ -566,6 +519,7 @@ export default function ArchNode({
             height: 40,
             border: "none",
             zIndex: 9,
+            cursor: interactionMode === "drawEdge" ? "crosshair" : "default",
           }}
         />
         <Handle
@@ -581,6 +535,7 @@ export default function ArchNode({
             alignItems: "center",
             justifyContent: "center",
             zIndex: 10,
+            cursor: interactionMode === "drawEdge" ? "crosshair" : "default",
           }}
         >
           <div
@@ -607,6 +562,7 @@ export default function ArchNode({
             height: 40,
             border: "none",
             zIndex: 9,
+            cursor: interactionMode === "drawEdge" ? "crosshair" : "default",
           }}
         />
         <Handle
@@ -622,6 +578,7 @@ export default function ArchNode({
             alignItems: "center",
             justifyContent: "center",
             zIndex: 10,
+            cursor: interactionMode === "drawEdge" ? "crosshair" : "default",
           }}
         >
           <div
@@ -648,6 +605,7 @@ export default function ArchNode({
             height: 40,
             border: "none",
             zIndex: 9,
+            cursor: interactionMode === "drawEdge" ? "crosshair" : "default",
           }}
         />
         <Handle
@@ -663,6 +621,7 @@ export default function ArchNode({
             alignItems: "center",
             justifyContent: "center",
             zIndex: 10,
+            cursor: interactionMode === "drawEdge" ? "crosshair" : "default",
           }}
         >
           <div

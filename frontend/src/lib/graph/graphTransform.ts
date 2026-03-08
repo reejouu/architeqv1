@@ -106,7 +106,7 @@ export function transformGraph(
 
         // Map priority (you can store this in order if order is missing, or a new field)
         const priorityScore = raw.priority?.[n.id];
-        const status = n.status || (priorityScore === 1 ? "In Progress" : "Not Started");
+        const status = n.status || "";
 
         return {
             ...n,

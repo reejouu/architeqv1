@@ -534,7 +534,7 @@ export default function RightPanel() {
                     boxShadow: "2px 2px 0px 0px #2c336c",
                   }}
                 >
-                  {String(selectedNode.data.owner || "PK")}
+                  {String(selectedNode.data.owner || "PK").slice(0, 2).toUpperCase()}
                 </div>
                 <div>
                   <div
