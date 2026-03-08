@@ -201,7 +201,11 @@ export default function CanvasArea() {
     triggerSave,
     fitViewTrigger,
     setSelectedEdges,
+    setSelectedNodeIds,
     isLocked,
+    selectedNodeId,
+    selectedNodeIds,
+    interactionMode,
   } = useCanvasStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(storeNodes);
@@ -219,10 +223,24 @@ export default function CanvasArea() {
           measured: prev?.measured ?? storeNode.measured,
           width: prev?.width ?? storeNode.width,
           height: prev?.height ?? storeNode.height,
+          selectable: interactionMode !== "drawEdge",
         };
       }),
     );
-  }, [storeNodes, setNodes]);
+  }, [storeNodes, setNodes, interactionMode]);
+
+  // Sync store selection to React Flow
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        selected: selectedNodeIds.length > 0
+          ? selectedNodeIds.includes(n.id)
+          : n.id === selectedNodeId,
+      })),
+    );
+  }, [selectedNodeId, selectedNodeIds, setNodes]);
+
   useEffect(() => {
     setEdges(storeEdges);
   }, [storeEdges, setEdges]);
@@ -235,6 +253,7 @@ export default function CanvasArea() {
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      useCanvasStore.getState().pushHistory();
       const { edgeStyle } = useCanvasStore.getState();
       const newEdge: Edge = {
         ...connection,
@@ -249,12 +268,18 @@ export default function CanvasArea() {
     [setEdges, storeSetEdges, getEdges],
   );
 
+  const onNodeDragStart = useCallback(() => {
+    useCanvasStore.getState().pushHistory();
+  }, []);
+
   const onNodeDragStop = useCallback(() => {
+    storeSetNodes(getNodes());
     const timeout = setTimeout(() => triggerSave(), 800);
     return () => clearTimeout(timeout);
-  }, [triggerSave]);
+  }, [storeSetNodes, getNodes, triggerSave]);
 
   const onNodesDelete = useCallback(() => {
+    useCanvasStore.getState().pushHistory();
     setTimeout(() => {
       storeSetNodes(getNodes());
       triggerSave();
@@ -262,24 +287,40 @@ export default function CanvasArea() {
   }, [storeSetNodes, getNodes, triggerSave]);
 
   const onEdgesDelete = useCallback(() => {
+    useCanvasStore.getState().pushHistory();
     setTimeout(() => {
       storeSetEdges(getEdges());
       triggerSave();
     }, 0);
   }, [storeSetEdges, getEdges, triggerSave]);
 
-  const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    // Single click only selects the node (shows floating toolbar), doesn't open right panel
-    useCanvasStore.setState({ selectedNodeId: node.id });
+  const onNodeClick = useCallback((e: React.MouseEvent, node: Node) => {
+    // Ctrl/Cmd+click for multi-select
+    const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+    const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+    if (cmdOrCtrl) {
+      const current = useCanvasStore.getState().selectedNodeIds;
+      const newIds = current.includes(node.id)
+        ? current.filter((id) => id !== node.id)
+        : [...current, node.id];
+      useCanvasStore.setState({
+        selectedNodeIds: newIds,
+        selectedNodeId: newIds.length === 1 ? newIds[0] : newIds.length === 0 ? null : node.id,
+      });
+    } else {
+      // Single click only selects the node (shows floating toolbar), doesn't open right panel
+      useCanvasStore.setState({ selectedNodeId: node.id, selectedNodeIds: [node.id] });
+    }
   }, []);
 
   const onNodeDoubleClick = useCallback((_: React.MouseEvent, node: Node) => {
     // Double click selects AND opens the right panel
+    if (useCanvasStore.getState().interactionMode === "drawEdge") return;
     useCanvasStore.setState({ selectedNodeId: node.id, rightPanelOpen: true });
   }, []);
 
   const onPaneClick = useCallback(() => {
-    useCanvasStore.setState({ selectedNodeId: null, rightPanelOpen: false });
+    useCanvasStore.setState({ selectedNodeId: null, selectedNodeIds: [], rightPanelOpen: false });
     setContextMenu(null);
   }, [setContextMenu]);
 
@@ -322,6 +363,7 @@ export default function CanvasArea() {
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
+      useCanvasStore.getState().pushHistory();
       const type = e.dataTransfer.getData(
         "application/architeq-node",
       ) as NodeType;
@@ -331,7 +373,7 @@ export default function CanvasArea() {
       const config = NODE_TYPES_CONFIG[type];
 
       // Get current default styles
-      const { fontStyle, nodeColor } = useCanvasStore.getState();
+      const { fontStyle } = useCanvasStore.getState();
 
       const newNode: Node = {
         id: `node-${Date.now()}`,
@@ -341,7 +383,6 @@ export default function CanvasArea() {
           type,
           label: config.label,
           fontStyle,
-          nodeColor,
         },
       };
       setNodes((nds) => [...nds, newNode]);
@@ -356,13 +397,46 @@ export default function CanvasArea() {
   }, []);
 
   const onSelectionChange = useCallback(
-    ({ edges: selectedEdges }: { edges: Edge[] }) => {
+    ({ nodes: selectedNodes, edges: selectedEdges }: { nodes: Node[]; edges: Edge[] }) => {
+      setSelectedNodeIds(selectedNodes.map((n) => n.id));
       setSelectedEdges(selectedEdges.map((e) => e.id));
     },
-    [setSelectedEdges],
+    [setSelectedNodeIds, setSelectedEdges],
   );
 
   const isEmpty = nodes.length === 0;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in an input/textarea
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement).isContentEditable
+      ) {
+        return;
+      }
+
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+      if (cmdOrCtrl && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        const allNodeIds = useCanvasStore.getState().nodes.map((n) => n.id);
+        useCanvasStore.getState().setSelectedNodeIds(allNodeIds);
+      } else if (cmdOrCtrl && e.key.toLowerCase() === "z") {
+        if (e.shiftKey) {
+          useCanvasStore.getState().redo();
+        } else {
+          useCanvasStore.getState().undo();
+        }
+      } else if (cmdOrCtrl && e.key.toLowerCase() === "y") {
+        useCanvasStore.getState().redo();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <div
@@ -384,15 +458,16 @@ export default function CanvasArea() {
         onContextMenu={onContextMenu}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
+        onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
         onSelectionChange={onSelectionChange}
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        deleteKeyCode="Backspace"
+        deleteKeyCode={["Backspace", "Delete"]}
         selectionKeyCode="Shift"
-        multiSelectionKeyCode="Meta"
+        multiSelectionKeyCode={["Meta", "Control"]}
         connectionLineStyle={{
           stroke: "#636798",
           strokeWidth: 1.5,
@@ -414,12 +489,10 @@ export default function CanvasArea() {
         zoomOnDoubleClick={!isLocked}
         elementsSelectable={true}
         nodesDraggable={!isLocked}
-        nodesConnectable={!isLocked}
+        nodesConnectable={!isLocked && interactionMode === "drawEdge"}
         edgesFocusable={!isLocked}
         style={{ background: "transparent" }}
         proOptions={{ hideAttribution: true }}
-        fitView
-        fitViewOptions={{ padding: 0.12 }}
       >
         <Background
           variant={BackgroundVariant.Dots}

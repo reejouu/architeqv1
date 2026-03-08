@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+.toolbar-dropdown-btn:not([data-active="true"]):hover {
+  background: #636798 !important;
+  color: #f3f3f2 !important;
+  border-color: #636798 !important;
+}
+
+@font-face {
+  font-family: 'ComicNeueSansID';
+  src: url('/font-styles/ComicNeueSansID.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/font-styles/Montserrat-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('/font-styles/Poppins-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 @layer base {
   :root {
     --color-bg-base: #636798;

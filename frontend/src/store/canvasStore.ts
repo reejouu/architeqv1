@@ -14,10 +14,16 @@ interface ContextMenu {
     edgeId?: string;
 }
 
+interface HistoryState {
+    past: { nodes: Node[]; edges: Edge[] }[];
+    future: { nodes: Node[]; edges: Edge[] }[];
+}
+
 interface CanvasState {
     nodes: Node[];
     edges: Edge[];
     selectedNodeId: string | null;
+    selectedNodeIds: string[];
     rightPanelOpen: boolean;
     sidebarOpen: boolean;
     activeMode: ActiveMode;
@@ -32,8 +38,16 @@ interface CanvasState {
     fitViewTrigger: number;
     edgeStyle: "solid" | "dashed";
     fontStyle: "normal" | "bold" | "italic";
+    fontFamily: "inter" | "comic" | "montserrat" | "poppins";
     nodeColor: string;
     selectedEdgeIds: string[];
+    interactionMode: "select" | "drawEdge";
+    
+    // History
+    history: HistoryState;
+    pushHistory: () => void;
+    undo: () => void;
+    redo: () => void;
 
     // Actions
     setNodes: (nodes: Node[]) => void;
@@ -51,8 +65,12 @@ interface CanvasState {
     setSidebarOpen: (open: boolean) => void;
     setEdgeStyle: (style: "solid" | "dashed") => void;
     setFontStyle: (style: "normal" | "bold" | "italic") => void;
+    setFontFamily: (family: "inter" | "comic" | "montserrat" | "poppins") => void;
     setNodeColor: (color: string) => void;
+    setSelectedNodeIds: (ids: string[]) => void;
     setSelectedEdges: (ids: string[]) => void;
+    setInteractionMode: (mode: "select" | "drawEdge") => void;
+    updateEdgeData: (edgeId: string, data: any) => void;
     triggerSave: () => void;
     loadGraph: (raw: RawGraph, direction?: "TB" | "LR") => void;
     generateSampleNodes: () => void;
@@ -62,6 +80,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     nodes: [],
     edges: [],
     selectedNodeId: null,
+    selectedNodeIds: [],
     rightPanelOpen: false,
     sidebarOpen: true,
     activeMode: "design",
@@ -76,8 +95,74 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     fitViewTrigger: 0,
     edgeStyle: "solid",
     fontStyle: "normal",
+    fontFamily: "inter",
     nodeColor: "#ffffff",
     selectedEdgeIds: [],
+    interactionMode: "select",
+    history: { past: [], future: [] },
+
+    pushHistory: () =>
+        set((state) => {
+            const lastPast = state.history.past[state.history.past.length - 1];
+            // Don't push if the state hasn't changed at all
+            if (
+                lastPast &&
+                JSON.stringify(lastPast.nodes) === JSON.stringify(state.nodes) &&
+                JSON.stringify(lastPast.edges) === JSON.stringify(state.edges)
+            ) {
+                return state;
+            }
+
+            const newPast = [
+                ...state.history.past,
+                { nodes: state.nodes, edges: state.edges },
+            ].slice(-50); // Keep max 50 items to prevent memory bloat
+
+            return {
+                history: {
+                    past: newPast,
+                    future: [],
+                },
+            };
+        }),
+
+    undo: () =>
+        set((state) => {
+            if (state.history.past.length === 0) return state;
+
+            const previous = state.history.past[state.history.past.length - 1];
+            const newPast = state.history.past.slice(0, -1);
+
+            return {
+                nodes: previous.nodes,
+                edges: previous.edges,
+                history: {
+                    past: newPast,
+                    future: [{ nodes: state.nodes, edges: state.edges }, ...state.history.future],
+                },
+                hasUnsavedChanges: true,
+            };
+        }),
+
+    redo: () =>
+        set((state) => {
+            if (state.history.future.length === 0) return state;
+
+            const next = state.history.future[0];
+            const newFuture = state.history.future.slice(1);
+
+            return {
+                nodes: next.nodes,
+                edges: next.edges,
+                history: {
+                    past: [...state.history.past, { nodes: state.nodes, edges: state.edges }],
+                    future: newFuture,
+                },
+                hasUnsavedChanges: true,
+            };
+        }),
+
+    setInteractionMode: (mode) => set({ interactionMode: mode }),
 
     setNodes: (nodes) =>
         set((state) => {
@@ -91,14 +176,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         }),
     setEdges: (edges) => set({ edges, hasUnsavedChanges: true }),
 
-    addNode: (node) =>
+    addNode: (node) => {
+        get().pushHistory();
         set((state) => ({
             nodes: [...state.nodes, node],
             hasUnsavedChanges: true,
-        })),
+        }));
+    },
 
     selectNode: (id) =>
-        set({ selectedNodeId: id }),
+        set({ selectedNodeId: id, selectedNodeIds: id ? [id] : [] }),
 
     setIsLocked: (locked) => set({ isLocked: locked }),
 
@@ -116,31 +203,62 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
     setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
-    setEdgeStyle: (style) => set((state) => {
-        const edges = state.edges.map(e => 
-            state.selectedEdgeIds.includes(e.id) ? { ...e, data: { ...e.data, edgeStyle: style } } : e
-        );
-        return { edgeStyle: style, edges, hasUnsavedChanges: true };
-    }),
+    setEdgeStyle: (style) => {
+        get().pushHistory();
+        set((state) => {
+            const edges = state.edges.map(e => 
+                state.selectedEdgeIds.includes(e.id) ? { ...e, data: { ...e.data, edgeStyle: style } } : e
+            );
+            return { edgeStyle: style, edges, hasUnsavedChanges: true };
+        });
+    },
 
-    setFontStyle: (style) => set((state) => {
-        const nodes = state.nodes.map(n => 
-            n.id === state.selectedNodeId ? { ...n, data: { ...n.data, fontStyle: style } } : n
-        );
-        return { fontStyle: style, nodes, hasUnsavedChanges: true };
-    }),
+    setFontStyle: (style) => {
+        get().pushHistory();
+        set((state) => {
+            const ids = state.selectedNodeIds.length > 0 ? state.selectedNodeIds : state.selectedNodeId ? [state.selectedNodeId] : [];
+            const nodes = state.nodes.map(n => 
+                ids.includes(n.id) ? { ...n, data: { ...n.data, fontStyle: style } } : n
+            );
+            return { fontStyle: style, nodes, hasUnsavedChanges: true };
+        });
+    },
 
-    setNodeColor: (color) => set((state) => {
-        const nodes = state.nodes.map(n => 
-            n.id === state.selectedNodeId ? { ...n, data: { ...n.data, nodeColor: color } } : n
-        );
-        return { nodeColor: color, nodes, hasUnsavedChanges: true };
-    }),
+    setFontFamily: (family) => {
+        get().pushHistory();
+        set((state) => {
+            const ids = state.selectedNodeIds.length > 0 ? state.selectedNodeIds : state.selectedNodeId ? [state.selectedNodeId] : [];
+            const nodes = state.nodes.map(n => 
+                ids.includes(n.id) ? { ...n, data: { ...n.data, fontFamily: family } } : n
+            );
+            return { fontFamily: family, nodes, hasUnsavedChanges: true };
+        });
+    },
+
+    setNodeColor: (color) => {
+        get().pushHistory();
+        set((state) => {
+            const ids = state.selectedNodeIds.length > 0 ? state.selectedNodeIds : state.selectedNodeId ? [state.selectedNodeId] : [];
+            const nodes = state.nodes.map(n => 
+                ids.includes(n.id) ? { ...n, data: { ...n.data, nodeColor: color } } : n
+            );
+            return { nodeColor: color, nodes, hasUnsavedChanges: true };
+        });
+    },
     
+    setSelectedNodeIds: (ids) => set({ selectedNodeIds: ids, selectedNodeId: ids.length === 1 ? ids[0] : ids.length === 0 ? null : get().selectedNodeId }),
+
     setSelectedEdges: (ids) => set({ selectedEdgeIds: ids }),
 
     setProjectName: (name) =>
         set({ projectName: name, hasUnsavedChanges: true }),
+
+    updateEdgeData: (edgeId, data) => set((state) => ({
+        edges: state.edges.map((e) =>
+            e.id === edgeId ? { ...e, data: { ...e.data, ...data } } : e
+        ),
+        hasUnsavedChanges: true,
+    })),
 
     triggerSave: () => {
         set({ saveStatus: "saving", hasUnsavedChanges: false });

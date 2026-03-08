@@ -5,12 +5,13 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
   title: "Architeq — AI Architecture Platform",
-  description: "Type an idea → AI generates a live, visual architecture graph → team collaborates, edits, and owns it.",
+  description:
+    "Type an idea → AI generates a live, visual architecture graph → team collaborates, edits, and owns it.",
 };
 
 export default function RootLayout({

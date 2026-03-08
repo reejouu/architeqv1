@@ -11,6 +11,7 @@ import {
 } from "@xyflow/react";
 import { useCanvasStore } from "@/store/canvasStore";
 import { GRAPH_TYPE_CONFIG, STATUS_CONFIG } from "@/lib/graph/graphTransform";
+import { NODE_TYPES_CONFIG } from "@/lib/constants/canvasConstants";
 
 const ToolBtn = ({
   title,
@@ -73,7 +74,10 @@ export default function ArchNode({
   const nodeType = String(
     data.nodeType || data.type || "default",
   ).toLowerCase();
-  const config = GRAPH_TYPE_CONFIG[nodeType] || GRAPH_TYPE_CONFIG.default;
+  const config =
+    NODE_TYPES_CONFIG[nodeType as keyof typeof NODE_TYPES_CONFIG] ||
+    GRAPH_TYPE_CONFIG[nodeType] ||
+    GRAPH_TYPE_CONFIG.default;
   const label =
     data.label !== undefined && data.label !== ""
       ? String(data.label)
@@ -85,16 +89,25 @@ export default function ArchNode({
   // Custom styles from Toolbar Excalidraw-like tools
   const customColor = data.nodeColor as string | undefined;
   const fontStyle = data.fontStyle as "normal" | "bold" | "italic" | undefined;
+  const fontFamily = data.fontFamily as
+    | "inter"
+    | "comic"
+    | "montserrat"
+    | "poppins"
+    | undefined;
 
   // Resolve final color (custom overrides config)
   const baseColor = customColor || config.color;
+  const isLightBg =
+    baseColor.toLowerCase() === "#f3f3f2" ||
+    baseColor.toLowerCase() === "#ffffff";
 
   const [hovered, setHovered] = useState(false);
   const [pulse, setPulse] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { deleteElements } = useReactFlow();
-  const { addNode, nodes } = useCanvasStore();
+  const { addNode, nodes, interactionMode, selectedNodeIds } = useCanvasStore();
 
   // Ambient pulse every 4–6s
   useEffect(() => {
@@ -148,7 +161,11 @@ export default function ArchNode({
       />
 
       {/* ── Floating toolbar (NodeToolbar = auto pan/zoom aware) ── */}
-      <NodeToolbar isVisible={selected} position={Position.Top} offset={10}>
+      <NodeToolbar
+        isVisible={selected && interactionMode !== "drawEdge" && selectedNodeIds.length <= 1}
+        position={Position.Top}
+        offset={10}
+      >
         <div
           style={{
             background: "#c78caf",
@@ -247,7 +264,7 @@ export default function ArchNode({
         </div>
       </NodeToolbar>
 
-      {/* ── Node body ── */}
+      {/* ── Node container (handles transform & position) ── */}
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -256,276 +273,411 @@ export default function ArchNode({
           height: height ? "100%" : undefined,
           minWidth: 140,
           minHeight: 70,
-          borderRadius: 14,
-          background: "#ffffff",
-          border: `2.5px solid #2c336c`,
-          boxShadow: selected
-            ? "6px 6px 0px 0px #2c336c"
-            : hovered
-              ? "4px 4px 0px 0px #2c336c"
-              : "3px 3px 0px 0px #2c336c",
           position: "relative",
-          transition: "box-shadow 200ms, transform 200ms",
-          cursor: "pointer",
-          userSelect: "none",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          transform: selected
-            ? "translate(-5px, -5px)"
-            : hovered
-              ? "translate(-2px, -2px)"
-              : "translate(0, 0)",
-          boxSizing: "border-box",
+          transform:
+            selected && interactionMode !== "drawEdge"
+              ? "translate(-5px, -5px)"
+              : hovered && interactionMode !== "drawEdge"
+                ? "translate(-2px, -2px)"
+                : "translate(0, 0)",
+          transition: "transform 200ms",
         }}
       >
-        {/* ── Colored header band ── */}
+        {/* ── Node Visual Body ── */}
         <div
           style={{
-            background: baseColor,
-            borderBottom: "3px solid #2c336c",
-            padding: "11px 12px 11px 14px",
+            width: "100%",
+            height: "100%",
+            borderRadius: 14,
+            background: "#ffffff",
+            border: `2.5px solid #2c336c`,
+            boxShadow:
+              selected && interactionMode !== "drawEdge"
+                ? "6px 6px 0px 0px #2c336c"
+                : hovered
+                  ? "4px 4px 0px 0px #2c336c"
+                  : "3px 3px 0px 0px #2c336c",
+            cursor: "pointer",
+            userSelect: "none",
+            overflow: "hidden",
             display: "flex",
-            alignItems: "flex-start",
-            gap: 8,
-            flexShrink: 0,
+            flexDirection: "column",
+            boxSizing: "border-box",
+            transition: "box-shadow 200ms",
           }}
         >
-          {/* Node label */}
-          <span
-            style={{
-              fontSize: 15,
-              fontWeight:
-                fontStyle === "bold" ? 900 : fontStyle === "italic" ? 500 : 500,
-              fontStyle: fontStyle === "italic" ? "italic" : "normal",
-              color: "#ffffff",
-              flex: 1,
-              lineHeight: 1.25,
-              wordBreak: "break-word",
-              whiteSpace: "normal",
-              textShadow: "1px 1px 0px rgba(0,0,0,0.25)",
-              letterSpacing: "0.01em",
-              transition: "all 0.2s ease",
-            }}
-          >
-            {label}
-          </span>
-
-          {/* Badges (priority + owner) */}
+          {/* ── Colored header band ── */}
           <div
             style={{
+              background: baseColor,
+              borderBottom: "3px solid #2c336c",
+              padding: "11px 12px 11px 14px",
               display: "flex",
-              flexDirection: "column",
-              gap: 4,
-              alignItems: "flex-end",
+              alignItems: "flex-start",
+              gap: 8,
               flexShrink: 0,
             }}
           >
-            {!!data.priorityScore && (
-              <div
+            {/* Node label */}
+            <span
+              style={{
+                fontSize: 15,
+                fontWeight:
+                  fontStyle === "bold"
+                    ? 900
+                    : fontStyle === "italic"
+                      ? 500
+                      : 500,
+                fontStyle: fontStyle === "italic" ? "italic" : "normal",
+                fontFamily:
+                  fontFamily === "comic"
+                    ? "ComicNeueSansID, sans-serif"
+                    : fontFamily === "montserrat"
+                      ? "Montserrat, sans-serif"
+                      : fontFamily === "poppins"
+                        ? "Poppins, sans-serif"
+                        : "var(--font-inter)",
+                color: isLightBg ? "#2c336c" : "#ffffff",
+                flex: 1,
+                lineHeight: 1.25,
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+                textShadow: isLightBg ? "none" : "1px 1px 0px rgba(0,0,0,0.25)",
+                letterSpacing: fontStyle === "bold" ? "-0.01em" : "0.01em",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {label}
+            </span>
+
+            {/* Badges (priority + owner) */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+                alignItems: "flex-end",
+                flexShrink: 0,
+              }}
+            >
+              {!!data.priorityScore && (
+                <div
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 0,
+                    background:
+                      Number(data.priorityScore) === 1
+                        ? "#EF4444"
+                        : Number(data.priorityScore) === 2
+                          ? "#F59E0B"
+                          : "#10B981",
+                    border: "2px solid #2c336c",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    fontFamily:
+                      fontFamily === "comic"
+                        ? "ComicNeueSansID, sans-serif"
+                        : fontFamily === "montserrat"
+                          ? "Montserrat, sans-serif"
+                          : fontFamily === "poppins"
+                            ? "Poppins, sans-serif"
+                            : "var(--font-inter)",
+                    color: "#ffffff",
+                    boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
+                  }}
+                  title={`Priority: P${String(data.priorityScore || "")}`}
+                >
+                  P{String(data.priorityScore || "")}
+                </div>
+              )}
+              {owner && (
+                <div
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 0,
+                    background: "#2c336c",
+                    border: "2px solid rgba(255,255,255,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    fontFamily:
+                      fontFamily === "comic"
+                        ? "ComicNeueSansID, sans-serif"
+                        : fontFamily === "montserrat"
+                          ? "Montserrat, sans-serif"
+                          : fontFamily === "poppins"
+                            ? "Poppins, sans-serif"
+                            : "var(--font-inter)",
+                    color: "#ffffff",
+                    boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
+                  }}
+                  title={`Owner: ${owner}`}
+                >
+                  {owner.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── White footer strip: type + status ── */}
+          <div
+            style={{
+              padding: "7px 12px",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexWrap: "wrap",
+              flex: 1,
+              background: "#f3f3f2",
+            }}
+          >
+            {/* Node type pill */}
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 800,
+                fontFamily:
+                  fontFamily === "comic"
+                    ? "ComicNeueSansID, sans-serif"
+                    : fontFamily === "montserrat"
+                      ? "Montserrat, sans-serif"
+                      : fontFamily === "poppins"
+                        ? "Poppins, sans-serif"
+                        : "var(--font-inter)",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: isLightBg ? "#2c336c" : "#ffffff",
+                background: baseColor,
+                border: "1.5px solid #2c336c",
+                borderRadius: 6,
+                padding: "3px 9px",
+                boxShadow: "2px 2px 0px 0px #2c336c",
+              }}
+            >
+              {nodeType}
+            </span>
+            {/* Status pill */}
+            {status && statusStyle && (
+              <span
                 style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 0,
-                  background:
-                    Number(data.priorityScore) === 1
-                      ? "#EF4444"
-                      : Number(data.priorityScore) === 2
-                        ? "#F59E0B"
-                        : "#10B981",
-                  border: "2px solid #2c336c",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
                   fontSize: 11,
-                  fontWeight: 800,
-                  color: "#ffffff",
-                  boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
-                }}
-                title={`Priority: P${String(data.priorityScore || "")}`}
-              >
-                P{String(data.priorityScore || "")}
-              </div>
-            )}
-            {owner && (
-              <div
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 0,
-                  background: "#2c336c",
-                  border: "2px solid rgba(255,255,255,0.5)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 10,
                   fontWeight: 700,
-                  color: "#ffffff",
-                  boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
+                  fontFamily:
+                    fontFamily === "comic"
+                      ? "ComicNeueSansID, sans-serif"
+                      : fontFamily === "montserrat"
+                        ? "Montserrat, sans-serif"
+                        : fontFamily === "poppins"
+                          ? "Poppins, sans-serif"
+                          : "var(--font-inter)",
+                  color: "#2c336c",
+                  background: statusStyle.bg,
+                  border: "1.5px solid #2c336c",
+                  borderRadius: 6,
+                  padding: "3px 9px",
+                  boxShadow: "1px 1px 0px 0px #2c336c",
                 }}
-                title={`Owner: ${owner}`}
               >
-                {owner.slice(0, 2).toUpperCase()}
-              </div>
+                {status}
+              </span>
+            )}
+            {/* Owner text */}
+            {owner && (
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  fontFamily:
+                    fontFamily === "comic"
+                      ? "ComicNeueSansID, sans-serif"
+                      : fontFamily === "montserrat"
+                        ? "Montserrat, sans-serif"
+                        : fontFamily === "poppins"
+                          ? "Poppins, sans-serif"
+                          : "var(--font-inter)",
+                  color: "#636798",
+                  marginLeft: "auto",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {owner}
+              </span>
             )}
           </div>
         </div>
 
-        {/* ── White footer strip: type + status ── */}
-        <div
+        {/* ── 4-Way Handles ── */}
+        {/* Top */}
+        <Handle
+          type="target"
+          position={Position.Top}
+          id="top"
           style={{
-            padding: "7px 12px",
+            opacity: 0,
+            width: 40,
+            height: 40,
+            border: "none",
+            zIndex: 9,
+          }}
+        />
+        <Handle
+          type="source"
+          position={Position.Top}
+          id="top"
+          style={{
+            width: 40,
+            height: 40,
+            background: "transparent",
+            border: "none",
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            flexWrap: "wrap",
-            flex: 1,
-            background: "#f3f3f2",
+            justifyContent: "center",
+            zIndex: 10,
           }}
         >
-          {/* Node type pill */}
-          <span
+          <div
             style={{
-              fontSize: 11,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              color: "#ffffff",
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
               background: baseColor,
-              border: "1.5px solid #2c336c",
-              borderRadius: 6,
-              padding: "3px 9px",
-              boxShadow: "2px 2px 0px 0px #2c336c",
+              border: "3px solid #2c336c",
+              opacity: hovered && interactionMode === "drawEdge" ? 1 : 0,
+              transition: "all 150ms",
             }}
-          >
-            {nodeType}
-          </span>
-          {/* Status pill */}
-          {status && statusStyle && (
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#2c336c",
-                background: statusStyle.bg,
-                border: "1.5px solid #2c336c",
-                borderRadius: 6,
-                padding: "3px 9px",
-                boxShadow: "1px 1px 0px 0px #2c336c",
-              }}
-            >
-              {status}
-            </span>
-          )}
-          {/* Owner text */}
-          {owner && (
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: "#636798",
-                marginLeft: "auto",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {owner}
-            </span>
-          )}
-        </div>
+          />
+        </Handle>
+
+        {/* Right */}
+        <Handle
+          type="target"
+          position={Position.Right}
+          id="right"
+          style={{
+            opacity: 0,
+            width: 40,
+            height: 40,
+            border: "none",
+            zIndex: 9,
+          }}
+        />
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="right"
+          style={{
+            width: 40,
+            height: 40,
+            background: "transparent",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
+              background: baseColor,
+              border: "3px solid #2c336c",
+              opacity: hovered && interactionMode === "drawEdge" ? 1 : 0,
+              transition: "all 150ms",
+            }}
+          />
+        </Handle>
+
+        {/* Bottom */}
+        <Handle
+          type="target"
+          position={Position.Bottom}
+          id="bottom"
+          style={{
+            opacity: 0,
+            width: 40,
+            height: 40,
+            border: "none",
+            zIndex: 9,
+          }}
+        />
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          id="bottom"
+          style={{
+            width: 40,
+            height: 40,
+            background: "transparent",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
+              background: baseColor,
+              border: "3px solid #2c336c",
+              opacity: hovered && interactionMode === "drawEdge" ? 1 : 0,
+              transition: "all 150ms",
+            }}
+          />
+        </Handle>
+
+        {/* Left */}
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="left"
+          style={{
+            opacity: 0,
+            width: 40,
+            height: 40,
+            border: "none",
+            zIndex: 9,
+          }}
+        />
+        <Handle
+          type="source"
+          position={Position.Left}
+          id="left"
+          style={{
+            width: 40,
+            height: 40,
+            background: "transparent",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
+              background: baseColor,
+              border: "3px solid #2c336c",
+              opacity: hovered && interactionMode === "drawEdge" ? 1 : 0,
+              transition: "all 150ms",
+            }}
+          />
+        </Handle>
       </div>
-
-      {/* ── 4-Way Handles ── */}
-      {/* Top */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        style={{ top: -7, opacity: 0, width: 14, height: 14 }}
-      />
-      <Handle
-        type="source"
-        position={Position.Top}
-        id="top"
-        style={{
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          background: baseColor,
-          border: "3px solid #2c336c",
-          opacity: hovered ? 1 : 0,
-          transition: "all 150ms",
-          top: -7,
-        }}
-      />
-
-      {/* Right */}
-      <Handle
-        type="target"
-        position={Position.Right}
-        id="right"
-        style={{ right: -7, opacity: 0, width: 14, height: 14 }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        style={{
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          background: baseColor,
-          border: "3px solid #2c336c",
-          opacity: hovered ? 1 : 0,
-          transition: "all 150ms",
-          right: -7,
-        }}
-      />
-
-      {/* Bottom */}
-      <Handle
-        type="target"
-        position={Position.Bottom}
-        id="bottom"
-        style={{ bottom: -7, opacity: 0, width: 14, height: 14 }}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        style={{
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          background: baseColor,
-          border: "3px solid #2c336c",
-          opacity: hovered ? 1 : 0,
-          transition: "all 150ms",
-          bottom: -7,
-        }}
-      />
-
-      {/* Left */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left"
-        style={{ left: -7, opacity: 0, width: 14, height: 14 }}
-      />
-      <Handle
-        type="source"
-        position={Position.Left}
-        id="left"
-        style={{
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          background: baseColor,
-          border: "3px solid #2c336c",
-          opacity: hovered ? 1 : 0,
-          transition: "all 150ms",
-          left: -7,
-        }}
-      />
     </>
   );
 }

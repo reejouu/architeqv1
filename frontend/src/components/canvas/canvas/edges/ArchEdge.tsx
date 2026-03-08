@@ -40,11 +40,11 @@ export default function ArchEdge({
     | undefined;
   const edgeStyle = data?.edgeStyle as string | undefined;
 
-  const strokeColor = selected ? "#2c336c" : "#636798";
+  const strokeColor = selected ? "#a8567e" : "#636798";
   const strokeWidth = selected ? 3 : 2;
   const strokeDasharray = edgeStyle === "dashed" ? "6 6" : undefined;
 
-  // ── Primary path: construct points dynamically relative to node positions ──
+  // ── 2. Primary Orthogonal path (Engine routed) ─────────────────────────────
   if (exitOffset && entryOffset && routingType !== "smoothstep") {
     // Calculate the absolute handle positions based on live node coords + layout engine offsets
     const liveExitX = sourceX + exitOffset.dx;
@@ -71,23 +71,44 @@ export default function ArchEdge({
     const path = buildOrthogonalPath(allPoints, cornerRadius);
 
     return (
-      <BaseEdge
-        id={id}
-        path={path}
-        markerEnd={markerEnd}
-        style={{
-          stroke: strokeColor,
-          strokeWidth: strokeWidth,
-          strokeOpacity: 1,
-          strokeLinecap: "round",
-          strokeDasharray: strokeDasharray,
-          fill: "none",
-        }}
-      />
+      <>
+        <defs>
+          <marker
+            id={`archArrowSelected-${id}`}
+            viewBox="-10 -10 20 20"
+            refX="0"
+            refY="0"
+            markerWidth="12.5"
+            markerHeight="12.5"
+            markerUnits="strokeWidth"
+            orient="auto-start-reverse"
+          >
+            <polyline
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points="-5,-4 0,0 -5,4 -5,-4"
+              style={{ stroke: "#a8567e", fill: "#a8567e", strokeWidth: 1 }}
+            />
+          </marker>
+        </defs>
+        <BaseEdge
+          id={id}
+          path={path}
+          markerEnd={selected ? `url(#archArrowSelected-${id})` : markerEnd}
+          style={{
+            stroke: strokeColor,
+            strokeWidth: strokeWidth,
+            strokeOpacity: 1,
+            strokeLinecap: "round",
+            strokeDasharray: strokeDasharray,
+            fill: "none",
+          }}
+        />
+      </>
     );
   }
 
-  // ── Fallback: React Flow smoothstep (when engine points unavailable) ──────
+  // ── 3. Fallback: React Flow smoothstep (when engine points unavailable) ────
   const lane = (data?.lane as number) ?? 0;
   const [fallbackPath] = getSmoothStepPath({
     sourceX,
@@ -101,19 +122,40 @@ export default function ArchEdge({
   });
 
   return (
-    <BaseEdge
-      id={id}
-      path={fallbackPath}
-      markerEnd={markerEnd}
-      style={{
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-        strokeOpacity: 1,
-        strokeDasharray: strokeDasharray,
-        strokeLinecap: "round",
-        fill: "none",
-      }}
-    />
+    <>
+      <defs>
+        <marker
+          id={`archArrowSelected-${id}`}
+          viewBox="-10 -10 20 20"
+          refX="0"
+          refY="0"
+          markerWidth="12.5"
+          markerHeight="12.5"
+          markerUnits="strokeWidth"
+          orient="auto-start-reverse"
+        >
+          <polyline
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            points="-5,-4 0,0 -5,4 -5,-4"
+            style={{ stroke: "#a8567e", fill: "#a8567e", strokeWidth: 1 }}
+          />
+        </marker>
+      </defs>
+      <BaseEdge
+        id={id}
+        path={fallbackPath}
+        markerEnd={selected ? `url(#archArrowSelected-${id})` : markerEnd}
+        style={{
+          stroke: strokeColor,
+          strokeWidth: strokeWidth,
+          strokeOpacity: 1,
+          strokeDasharray: strokeDasharray,
+          strokeLinecap: "round",
+          fill: "none",
+        }}
+      />
+    </>
   );
 }
 
