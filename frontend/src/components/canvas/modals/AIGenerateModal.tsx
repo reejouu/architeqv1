@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCanvasStore } from "@/store/canvasStore";
+import { Mic, Square } from "lucide-react";
 
 const PlaceholderToggle = ({ label }: { label: string }) => {
   const [active, setActive] = useState(false);
@@ -36,8 +37,69 @@ export default function AIGenerateModal() {
     setIsGenerating,
   } = useCanvasStore();
   const [prompt, setPrompt] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const originalPromptRef = useRef("");
 
   if (!isGenerateModalOpen) return null;
+
+  const startRecording = async () => {
+    originalPromptRef.current = prompt.trim();
+    
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Microphone/Speech Recognition is not supported in this browser. Please use Chrome or Edge.");
+      return;
+    }
+
+    if (!recognitionRef.current) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      
+      recognition.onresult = (event: any) => {
+        let finalT = "";
+        let interimT = "";
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalT += event.results[i][0].transcript;
+          } else {
+            interimT += event.results[i][0].transcript;
+          }
+        }
+        const newTranscript = finalT + interimT;
+        setPrompt(originalPromptRef.current + (originalPromptRef.current ? " " : "") + newTranscript.trim());
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        if (event.error !== "no-speech") {
+           setIsRecording(false);
+           recognition.stop();
+        }
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    try {
+      recognitionRef.current.start();
+      setIsRecording(true);
+    } catch (e) {
+      console.error("Failed to start speech recognition:", e);
+    }
+  };
+
+  const stopRecording = () => {
+    if (recognitionRef.current && isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
@@ -197,42 +259,94 @@ export default function AIGenerateModal() {
           Describe your system in plain English.
         </p>
 
-        {/* Textarea */}
-        <textarea
-          rows={4}
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="e.g. Build a SaaS for booking doctors with auth, payments, and notifications"
-          style={{
-            width: "100%",
-            height: 120,
-            background: "#f3f3f2",
-            border: "3px solid #2c336c",
-            borderRadius: 0,
-            padding: "16px",
-            fontSize: 15,
-            fontWeight: 600,
-            color: "#2c336c",
-            lineHeight: 1.6,
-            resize: "none",
-            outline: "none",
-            boxSizing: "border-box",
-            marginBottom: 16,
-            display: "block",
-            transition: "all 150ms",
-            boxShadow: "4px 4px 0px 0px #2c336c",
-          }}
-          onFocus={(e) => {
-            e.target.style.background = "#fff8f5";
-            e.target.style.transform = "translate(-2px, -2px)";
-            e.target.style.boxShadow = "6px 6px 0px 0px #2c336c";
-          }}
-          onBlur={(e) => {
-            e.target.style.background = "#f3f3f2";
-            e.target.style.transform = "translate(0, 0)";
-            e.target.style.boxShadow = "4px 4px 0px 0px #2c336c";
-          }}
-        />
+        {/* Textarea Area */}
+        <div style={{ position: "relative", marginBottom: 16 }}>
+          <textarea
+            rows={4}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            disabled={isRecording}
+            placeholder={
+              isRecording
+                ? "Recording... Speak now."
+                : "e.g. Build a SaaS for booking doctors with auth, payments, and notifications"
+            }
+            style={{
+              width: "100%",
+              height: 120,
+              background: isRecording ? "#fff8f5" : "#f3f3f2",
+              border: isRecording ? "3px solid #c78caf" : "3px solid #2c336c",
+              borderRadius: 0,
+              padding: "16px",
+              paddingRight: "50px", // space for mic button
+              fontSize: 15,
+              fontWeight: 600,
+              color: "#2c336c",
+              lineHeight: 1.6,
+              resize: "none",
+              outline: "none",
+              boxSizing: "border-box",
+              display: "block",
+              transition: "all 150ms",
+              boxShadow: isRecording
+                ? "6px 6px 0px 0px #c78caf"
+                : "4px 4px 0px 0px #2c336c",
+              transform: isRecording ? "translate(-2px, -2px)" : "translate(0, 0)",
+            }}
+            onFocus={(e) => {
+              if (isRecording) return;
+              e.target.style.background = "#fff8f5";
+              e.target.style.transform = "translate(-2px, -2px)";
+              e.target.style.boxShadow = "6px 6px 0px 0px #2c336c";
+            }}
+            onBlur={(e) => {
+              if (isRecording) return;
+              e.target.style.background = "#f3f3f2";
+              e.target.style.transform = "translate(0, 0)";
+              e.target.style.boxShadow = "4px 4px 0px 0px #2c336c";
+            }}
+          />
+
+          {/* Microphone Button */}
+          <button
+            onClick={isRecording ? stopRecording : startRecording}
+            title={isRecording ? "Stop recording" : "Speak your prompt"}
+            style={{
+              position: "absolute",
+              bottom: 12,
+              right: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: 0,
+              border: isRecording ? "2px solid #822b64" : "2px solid #2c336c",
+              background: isRecording ? "#c78caf" : "#f3f3f2",
+              color: isRecording ? "#fff" : "#2c336c",
+              cursor: "pointer",
+              transition: "all 150ms",
+              boxShadow: isRecording
+                ? "none"
+                : "2px 2px 0px 0px #2c336c",
+              transform: isRecording ? "translate(2px, 2px)" : "translate(0, 0)",
+              animation: isRecording ? "pulse 1.5s infinite" : "none",
+            }}
+          >
+            {isRecording ? <Square size={16} fill="currentColor" /> : <Mic size={18} />}
+          </button>
+        </div>
+
+        {/* CSS for pulsing effect */}
+        <style>
+          {`
+            @keyframes pulse {
+              0% { opacity: 1; transform: scale(1) translate(2px, 2px); }
+              50% { opacity: 0.7; transform: scale(0.95) translate(2px, 2px); }
+              100% { opacity: 1; transform: scale(1) translate(2px, 2px); }
+            }
+          `}
+        </style>
 
         {/* Toggles */}
         <div
