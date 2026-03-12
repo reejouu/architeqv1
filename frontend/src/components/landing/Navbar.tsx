@@ -41,9 +41,11 @@ export default function Navbar() {
                             className="flex items-center gap-3 font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider focus:outline-none"
                         >
                             <span>Welcome, {session.user?.name}</span>
-                            {/* {session.user?.image && (
-                                <img src={session.user.image} alt="Avatar" className="w-8 h-8 rounded-full border-[2px] border-[#2c336c]" />
-                            )} */}
+                            {session.user?.name && (
+                                <div className="w-8 h-8 rounded-full bg-[#f4f5f9] border-[2px] border-[#2c336c] flex items-center justify-center text-[#2c336c] font-black text-xs uppercase shadow-[2px_2px_0px_#2c336c]">
+                                    {session.user.name.substring(0, 2)}
+                                </div>
+                            )}
                         </button>
                         
                         {isDropdownOpen && (
