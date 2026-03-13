@@ -2,6 +2,8 @@ import { create } from "zustand";
 import type { Node, Edge } from "@xyflow/react";
 import { SAMPLE_NODES, SAMPLE_EDGES } from "@/lib/constants/canvasConstants";
 import { transformGraph, type RawGraph } from "@/lib/graph/graphTransform";
+import { liveblocks, WithLiveblocks } from "@liveblocks/zustand";
+import { liveblocksClient } from "@/lib/liveblocks-client";
 
 type SaveStatus = "idle" | "saving" | "saved";
 type ActiveMode = "design" | "review" | "export";
@@ -76,7 +78,9 @@ interface CanvasState {
     generateSampleNodes: () => void;
 }
 
-export const useCanvasStore = create<CanvasState>((set, get) => ({
+export const useCanvasStore = create<WithLiveblocks<CanvasState>>()( 
+    liveblocks(
+        (set, get) => ({
     nodes: [],
     edges: [],
     selectedNodeId: null,
@@ -297,4 +301,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
             setTimeout(() => set(s => ({ fitViewTrigger: s.fitViewTrigger + 1 })), 150);
         }, SAMPLE_NODES.length * 150 + 200);
     },
-}));
+    }),
+    {
+        client: liveblocksClient as any,
+        storageMapping: { nodes: true, edges: true },
+    }
+  )
+);

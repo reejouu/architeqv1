@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { useCanvasStore } from "@/store/canvasStore";
-import { COLLABORATORS } from "@/lib/constants/canvasConstants";
 import { useEffect, useRef } from "react";
 import ArrowIcon from "../../../../public/icons/arrow/arrow";
 import SolidArrowIcon from "../../../../public/icons/arrow/solid-arrow";
 import DashedArrowIcon from "../../../../public/icons/arrow/dashed-arrow";
 
-import FontIcon from "../../../../public/icons/font/font";
 import BoldIcon from "../../../../public/icons/font/bold";
 import ItalicIcon from "../../../../public/icons/font/italics";
 import { GRAPH_TYPE_CONFIG } from "@/lib/graph/graphTransform";
 import { COLOR_PALETTE } from "@/lib/constants/canvasConstants";
+import { useRoom, useOthers, useSelf } from "@liveblocks/react";
+import { useRouter } from "next/navigation";
 
 const ToolButton = ({
   active,
@@ -139,10 +139,27 @@ export default function Toolbar() {
 
   const [arrowMenuOpen, setArrowMenuOpen] = useState(false);
   const [fontFamilyMenuOpen, setFontFamilyMenuOpen] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
+  
+  const room = useRoom();
+  const others = useOthers();
+  const currentUser = useSelf();
+  const router = useRouter();
+
+  const [shareMenuOpen, setShareMenuOpen] = useState(false);
+  const [joinCodeInput, setJoinCodeInput] = useState("");
+  
+  const allStreams = currentUser ? [currentUser, ...others] : others;
+  
+  // Deduplicate users by their unique ID so multiple tabs by the same person only yield one avatar
+  const activeUsers = Array.from(
+    new Map(allStreams.map((u) => [u.id || u.connectionId, u])).values()
+  );
 
   // Refs for click-outside detection
   const arrowRef = useRef<HTMLDivElement>(null);
   const fontFamilyRef = useRef<HTMLDivElement>(null);
+  const shareRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -154,6 +171,12 @@ export default function Toolbar() {
         !fontFamilyRef.current.contains(e.target as Node)
       ) {
         setFontFamilyMenuOpen(false);
+      }
+      if (
+        shareRef.current &&
+        !shareRef.current.contains(e.target as Node)
+      ) {
+        setShareMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -616,31 +639,43 @@ export default function Toolbar() {
       >
         {/* Collaborator avatars */}
         <div style={{ display: "flex", alignItems: "center" }}>
-          {COLLABORATORS.map((c, i) => (
-            <div
-              key={c.initials}
-              title={c.name}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: c.color,
-                border: "2px solid #3d4270",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 10,
-                fontWeight: 700,
-                color: "#fff",
-                marginLeft: i === 0 ? 0 : -8,
-                zIndex: COLLABORATORS.length - i,
-                cursor: "default",
-                flexShrink: 0,
-              }}
-            >
-              {c.initials}
-            </div>
-          ))}
+          {activeUsers.map((u, i) => {
+            const info = u.info || {};
+            const name = info.name || "Anonymous";
+            const color = info.color || "#3d4270";
+            const initials = name
+              .split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .substring(0, 2)
+              .toUpperCase();
+
+            return (
+              <div
+                key={u.connectionId || "self"}
+                title={name + (u.id === currentUser?.id ? " (You)" : "")}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  background: color,
+                  border: "2px solid #3d4270",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#fff",
+                  marginLeft: i === 0 ? 0 : -8,
+                  zIndex: activeUsers.length - i,
+                  cursor: "default",
+                  flexShrink: 0,
+                }}
+              >
+                {initials}
+              </div>
+            );
+          })}
         </div>
 
         {/* Divider */}
@@ -653,51 +688,170 @@ export default function Toolbar() {
           }}
         />
 
-        {/* Share button */}
-        <button
-          style={{
-            height: 32,
-            padding: "0 14px",
-            borderRadius: 0,
-            border: "2px solid rgba(255,255,255,0.3)",
-            background: "rgba(255,255,255,0.1)",
-            color: "#f3f3f2",
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            boxShadow: "none",
-            transition: "all 150ms",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background =
-              "rgba(255,255,255,0.2)";
-            (e.currentTarget as HTMLElement).style.transform = "none";
-            (e.currentTarget as HTMLElement).style.boxShadow = "none";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background =
-              "rgba(255,255,255,0.1)";
-            (e.currentTarget as HTMLElement).style.transform =
-              "translate(0, 0)";
-            (e.currentTarget as HTMLElement).style.boxShadow = "none";
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
+        {/* Share / Join dropdown */}
+        <div ref={shareRef} style={{ position: "relative" }}>
+          <button
+            onClick={() => setShareMenuOpen(!shareMenuOpen)}
+            style={{
+              height: 32,
+              padding: "0 14px",
+              borderRadius: 0,
+              border: "2px solid rgba(255,255,255,0.3)",
+              background: shareMenuOpen ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)",
+              color: "#f3f3f2",
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              boxShadow: "none",
+              transition: "all 150ms",
+            }}
+            onMouseEnter={(e) => {
+              if (!shareMenuOpen) {
+                (e.currentTarget as HTMLElement).style.background =
+                  "rgba(255,255,255,0.2)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!shareMenuOpen) {
+                (e.currentTarget as HTMLElement).style.background =
+                  "rgba(255,255,255,0.1)";
+              }
+            }}
           >
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
-          Share
-        </button>
+            {showCopied ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            )}
+            {showCopied ? "Code Copied!" : "Share / Join"}
+          </button>
+
+          {shareMenuOpen && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                right: 0,
+                marginTop: 8,
+                background: "#f3f3f2",
+                border: "2px solid #2c336c",
+                borderRadius: 0,
+                padding: "12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                boxShadow: "4px 4px 0px 0px #2c336c",
+                zIndex: 1000,
+                minWidth: 240,
+              }}
+            >
+              {/* Copy Code */}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#636798", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Current Room Code</div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <input
+                    readOnly
+                    value={room.id}
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      fontSize: 12,
+                      padding: "6px 8px",
+                      background: "rgba(99, 103, 152, 0.1)",
+                      border: "1px solid #636798",
+                      color: "#2c336c",
+                      outline: "none",
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(room.id);
+                      setShowCopied(true);
+                      setTimeout(() => setShowCopied(false), 2000);
+                      setShareMenuOpen(false);
+                    }}
+                    style={{
+                      padding: "0 10px",
+                      background: "#2c336c",
+                      color: "#f3f3f2",
+                      border: "none",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4
+                    }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ height: 1, background: "rgba(44, 51, 108, 0.1)" }} />
+
+              {/* Join Code */}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#636798", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Join a Room</div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <input
+                    placeholder="Enter short code"
+                    value={joinCodeInput}
+                    onChange={(e) => setJoinCodeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && joinCodeInput.trim()) {
+                        setShareMenuOpen(false);
+                        window.location.href = `/canvas?room=${joinCodeInput.trim()}`;
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      fontSize: 12,
+                      padding: "6px 8px",
+                      background: "#fff",
+                      border: "1px solid #636798",
+                      color: "#2c336c",
+                      outline: "none",
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (joinCodeInput.trim()) {
+                        setShareMenuOpen(false);
+                        window.location.href = `/canvas?room=${joinCodeInput.trim()}`;
+                      }
+                    }}
+                    disabled={!joinCodeInput.trim()}
+                    style={{
+                      padding: "0 10px",
+                      background: joinCodeInput.trim() ? "#c78caf" : "rgba(199, 140, 175, 0.4)",
+                      color: "#2c336c",
+                      border: "1px solid #2c336c",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: joinCodeInput.trim() ? "pointer" : "default",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4
+                    }}
+                  >
+                    Join
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          )}
+        </div>
 
         {/* Generate button */}
         <button

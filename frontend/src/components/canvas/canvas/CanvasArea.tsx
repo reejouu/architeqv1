@@ -23,6 +23,7 @@ import ArchNode from "./nodes/ArchNode";
 import ArchEdge from "./edges/ArchEdge";
 import DependencyEdge from "./edges/DependencyEdge";
 import CriticalEdge from "./edges/CriticalEdge";
+import { useMyPresence, useOthers } from "@liveblocks/react";
 
 const nodeTypes = { archNode: ArchNode };
 const edgeTypes = {
@@ -188,6 +189,68 @@ function EmptyState({ onGenerate }: { onGenerate: () => void }) {
   );
 }
 
+function LiveCursors() {
+  const others = useOthers();
+
+  return (
+    <>
+      {others.map(({ connectionId, presence, info }) => {
+        if (presence == null || !presence.cursor) {
+          return null;
+        }
+
+        return (
+          <div
+            key={connectionId}
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              transform: `translate(${presence.cursor.x}px, ${presence.cursor.y}px)`,
+              pointerEvents: "none",
+              zIndex: 9999,
+              transition: "transform 0.1s linear",
+            }}
+          >
+            {/* SVG Arrow */}
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill={info?.color || "#eab308"}
+              stroke="#fff"
+              strokeWidth="2"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                transform: "translate(-8px, -4px)", // offset to tip
+              }}
+            >
+              <path d="M5.65376 21.2087L2.94632 2.76634C2.65155 0.758062 4.90809 -0.52848 6.54922 0.7088L21.4984 11.4116C23.0886 12.55 22.1837 15.0298 20.2195 14.8817L14.7358 14.468L11.5165 20.3061C10.5841 21.9967 8.16913 22.3421 6.84594 20.9701L5.65376 21.2087Z" />
+            </svg>
+            <div
+              style={{
+                position: "absolute",
+                left: 10,
+                top: 18,
+                backgroundColor: info?.color || "#eab308",
+                color: "#fff",
+                padding: "2px 6px",
+                borderRadius: "4px",
+                fontSize: "12px",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
+            >
+              {info?.name || "Teammate"}
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 export default function CanvasArea() {
   const {
     nodes: storeNodes,
@@ -212,6 +275,20 @@ export default function CanvasArea() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(storeEdges);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { screenToFlowPosition, getEdges, getNodes, fitView } = useReactFlow();
+
+  const [, updateMyPresence] = useMyPresence();
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!reactFlowWrapper.current) return;
+    const rect = reactFlowWrapper.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    updateMyPresence({ cursor: { x, y } });
+  }, [updateMyPresence]);
+
+  const handlePointerLeave = useCallback(() => {
+    updateMyPresence({ cursor: null });
+  }, [updateMyPresence]);
 
   // Sync store → React Flow state
   useEffect(() => {
@@ -452,8 +529,11 @@ export default function CanvasArea() {
   return (
     <div
       ref={reactFlowWrapper}
-      style={{ width: "100%", height: "100%", position: "relative" }}
+      style={{ width: "100%", height: "100%", position: "relative", cursor: interactionMode === "drawEdge" ? "crosshair" : "default" }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
     >
+      <LiveCursors />
       <ArrowMarkerDefs />
       <ReactFlow
         nodes={nodes}
