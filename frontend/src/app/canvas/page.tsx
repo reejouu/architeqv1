@@ -6,7 +6,7 @@ export const metadata = {
     description: "Build and visualize your system architecture",
 };
 
-export default function CanvasRoute() {
+export default async function CanvasRoute() {
     return (
         <ReactFlowProvider>
             <CanvasPage />
