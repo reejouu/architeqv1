@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   open: boolean;
@@ -8,6 +8,8 @@ type Props = {
 };
 
 export default function LoginModal({ open, onClose }: Props) {
+  const router = useRouter();
+
   if (!open) return null;
 
   return (
@@ -28,7 +30,7 @@ export default function LoginModal({ open, onClose }: Props) {
           </div>
 
           <button
-            onClick={() => signIn("google", { callbackUrl: "/post-auth" })}
+            onClick={() => router.push("/canvas")}
             className="group w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-[#f3f3f2] border-[3px] border-[#4a4660] shadow-[4px_4px_0px_#1a1828] text-[13px] font-bold text-[#2d2a3e] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#1a1828] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all"
           >
             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">

@@ -27,18 +27,16 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (modalParam === "login") {
-      setLoginOpen(true);
-      setOnboardingOpen(false);
+      router.push("/canvas");
     } else if (modalParam === "onboarding") {
       setOnboardingOpen(true);
       setLoginOpen(false);
     }
-  }, [modalParam]);
+  }, [modalParam, router]);
 
   const openLogin = useCallback(() => {
-    setLoginOpen(true);
-    setOnboardingOpen(false);
-  }, []);
+    router.push("/canvas");
+  }, [router]);
 
   const closeLogin = useCallback(() => {
     setLoginOpen(false);

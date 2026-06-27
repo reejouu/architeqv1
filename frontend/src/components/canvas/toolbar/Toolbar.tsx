@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useCanvasStore } from "@/store/canvasStore";
-import { COLLABORATORS } from "@/lib/constants/canvasConstants";
 import { useEffect, useRef } from "react";
 import ArrowIcon from "../../../../public/icons/arrow/arrow";
 import SolidArrowIcon from "../../../../public/icons/arrow/solid-arrow";
@@ -614,35 +613,6 @@ export default function Toolbar() {
           justifyContent: "flex-end",
         }}
       >
-        {/* Collaborator avatars */}
-        <div style={{ display: "flex", alignItems: "center" }}>
-          {COLLABORATORS.map((c, i) => (
-            <div
-              key={c.initials}
-              title={c.name}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: c.color,
-                border: "2px solid #3d4270",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 10,
-                fontWeight: 700,
-                color: "#fff",
-                marginLeft: i === 0 ? 0 : -8,
-                zIndex: COLLABORATORS.length - i,
-                cursor: "default",
-                flexShrink: 0,
-              }}
-            >
-              {c.initials}
-            </div>
-          ))}
-        </div>
-
         {/* Divider */}
         <div
           style={{
