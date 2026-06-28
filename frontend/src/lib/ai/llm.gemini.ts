@@ -1,11 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { callOpenAI } from "./llm.openai";
 
 let genAI: GoogleGenerativeAI;
 
-/**
- * Calls Gemini and parses the JSON response.
- * Drop-in replacement for the Claude llm.ts — same signature.
- */
 export async function callGemini<T>(
     systemPrompt: string,
     userPrompt: string,
@@ -21,14 +18,21 @@ export async function callGemini<T>(
         generationConfig: {
             maxOutputTokens: maxTokens,
             temperature: 0.2,
-            responseMimeType: "application/json", // Gemini returns clean JSON natively
+            responseMimeType: "application/json",
         },
     });
 
-    const result = await model.generateContent(userPrompt);
-    const raw = result.response.text().trim();
-
-    // Strip markdown fences just in case
-    const jsonText = raw.replace(/^```json\n?|\n?```$/g, "").trim();
-    return JSON.parse(jsonText) as T;
+    try {
+        const result = await model.generateContent(userPrompt);
+        const raw = result.response.text().trim();
+        const jsonText = raw.replace(/^```json\n?|\n?```$/g, "").trim();
+        return JSON.parse(jsonText) as T;
+    } catch (err: unknown) {
+        const status = (err as { status?: number })?.status;
+        if (status === 503) {
+            console.warn("Gemini 503 — falling back to OpenAI");
+            return callOpenAI<T>(systemPrompt, userPrompt, maxTokens);
+        }
+        throw err;
+    }
 }
