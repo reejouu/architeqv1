@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCanvasStore } from "@/store/canvasStore";
 import { useEffect, useRef } from "react";
 import ArrowIcon from "../../../../public/icons/arrow/arrow";
@@ -12,6 +13,11 @@ import BoldIcon from "../../../../public/icons/font/bold";
 import ItalicIcon from "../../../../public/icons/font/italics";
 import { GRAPH_TYPE_CONFIG } from "@/lib/graph/graphTransform";
 import { COLOR_PALETTE } from "@/lib/constants/canvasConstants";
+import LeaveConfirmModal from "../modals/LeaveConfirmModal";
+import RenameProjectModal from "../modals/RenameProjectModal";
+import UserMenu from "./UserMenu";
+
+const DEFAULT_PROJECT_NAME = "Untitled Project";
 
 const ToolButton = ({
   active,
@@ -75,9 +81,15 @@ function SelectIcon() {
 }
 
 export default function Toolbar() {
+  const router = useRouter();
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
+  const [leaveSaving, setLeaveSaving] = useState(false);
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [renameSaving, setRenameSaving] = useState(false);
+
   const {
     projectName,
-    setProjectName,
+    renameProject,
     openGenerateModal,
     saveStatus,
     hasUnsavedChanges,
@@ -135,6 +147,7 @@ export default function Toolbar() {
 
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(projectName);
+  const [nameHovered, setNameHovered] = useState(false);
 
   const [arrowMenuOpen, setArrowMenuOpen] = useState(false);
   const [fontFamilyMenuOpen, setFontFamilyMenuOpen] = useState(false);
@@ -160,8 +173,51 @@ export default function Toolbar() {
   }, []);
 
   const handleNameSave = () => {
-    setProjectName(nameInput);
     setEditingName(false);
+    const trimmed = nameInput.trim();
+    if (trimmed && trimmed !== projectName) renameProject(trimmed);
+  };
+
+  const handleSaveClick = () => {
+    if (projectName === DEFAULT_PROJECT_NAME) {
+      setRenameModalOpen(true);
+    } else {
+      triggerSave();
+    }
+  };
+
+  const handleRenameModalSave = async (name: string) => {
+    setRenameSaving(true);
+    await renameProject(name);
+    await triggerSave();
+    setRenameSaving(false);
+    setRenameModalOpen(false);
+  };
+
+  const handleRenameModalSkip = () => {
+    setRenameModalOpen(false);
+    triggerSave();
+  };
+
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      setLeaveConfirmOpen(true);
+    } else {
+      router.push("/");
+    }
+  };
+
+  const handleSaveAndLeave = async () => {
+    setLeaveSaving(true);
+    await triggerSave();
+    setLeaveSaving(false);
+    setLeaveConfirmOpen(false);
+    router.push("/");
+  };
+
+  const handleDiscardAndLeave = () => {
+    setLeaveConfirmOpen(false);
+    router.push("/");
   };
 
   return (
@@ -191,8 +247,8 @@ export default function Toolbar() {
         }}
       >
         {/* Back button */}
-        <a
-          href="/"
+        <button
+          onClick={handleBackClick}
           style={{
             width: 32,
             height: 32,
@@ -202,6 +258,7 @@ export default function Toolbar() {
             alignItems: "center",
             justifyContent: "center",
             color: "#f3f3f2",
+            background: "transparent",
             cursor: "pointer",
             transition: "all 150ms",
             textDecoration: "none",
@@ -235,7 +292,7 @@ export default function Toolbar() {
           >
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-        </a>
+        </button>
 
         {/* Breadcrumb */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -271,17 +328,50 @@ export default function Toolbar() {
               }}
             />
           ) : (
-            <span
-              onClick={() => setEditingName(true)}
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#f3f3f2",
-                cursor: "text",
-              }}
+            <div
+              onMouseEnter={() => setNameHovered(true)}
+              onMouseLeave={() => setNameHovered(false)}
+              style={{ display: "flex", alignItems: "center", gap: 4 }}
             >
-              {projectName}
-            </span>
+              <span
+                onClick={() => {
+                  setNameInput(projectName);
+                  setEditingName(true);
+                }}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#f3f3f2",
+                  cursor: "text",
+                }}
+              >
+                {projectName}
+              </span>
+              <button
+                onClick={() => {
+                  setNameInput(projectName);
+                  setEditingName(true);
+                }}
+                title="Rename project"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  color: "rgba(255,255,255,0.6)",
+                  opacity: nameHovered ? 1 : 0,
+                  transition: "opacity 150ms",
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+            </div>
           )}
 
           {/* Unsaved dot */}
@@ -301,305 +391,312 @@ export default function Toolbar() {
         </div>
       </div>
 
-      {/* CENTER ZONE — Canvas Tools (Excalidraw style) */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          padding: "4px 12px",
-          background: "rgba(0,0,0,0.2)",
-          border: "2px solid rgba(255,255,255,0.25)",
-          borderRadius: 8,
-        }}
-      >
-        {/* Select Tool */}
-        <ToolButton
-          title="Select (V)"
-          active={interactionMode === "select"}
-          onClick={() => {
-            setInteractionMode("select");
-            setArrowMenuOpen(false);
-            setFontFamilyMenuOpen(false);
+      {/* CENTER ZONE — Canvas Tools, grouped into two clusters */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Cluster A — Tools */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "4px 10px",
+            background: "rgba(0,0,0,0.2)",
+            border: "2px solid rgba(255,255,255,0.25)",
+            borderRadius: 8,
           }}
         >
-          <div style={{ width: 18, height: 18, fill: "none" }}>
-            <SelectIcon />
-          </div>
-        </ToolButton>
-
-        {/* Edge Toggle / Dropdown */}
-        <div ref={arrowRef} style={{ position: "relative" }}>
+          {/* Select Tool */}
           <ToolButton
-            title={`Select Edge Style`}
-            active={interactionMode === "drawEdge" || arrowMenuOpen}
+            title="Select (V)"
+            active={interactionMode === "select"}
             onClick={() => {
-              if (interactionMode === "drawEdge") {
-                setArrowMenuOpen(!arrowMenuOpen);
-              } else {
-                setInteractionMode("drawEdge");
-              }
+              setInteractionMode("select");
+              setArrowMenuOpen(false);
               setFontFamilyMenuOpen(false);
             }}
           >
-            <div style={{ width: 18, height: 18, fill: "currentColor" }}>
-              {edgeStyle === "dashed" ? (
-                <DashedArrowIcon />
-              ) : (
-                <SolidArrowIcon />
-              )}
+            <div style={{ width: 18, height: 18, fill: "none" }}>
+              <SelectIcon />
             </div>
           </ToolButton>
 
-          {arrowMenuOpen && (
-            <div
-              style={{
-                position: "absolute",
-                top: "100%",
-                left: 0,
-                marginTop: 8,
-                background: "#f3f3f2",
-                border: "2px solid #2c336c",
-                borderRadius: 0,
-                padding: 4,
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                boxShadow: "4px 4px 0px 0px #2c336c",
-                zIndex: 1000,
-                minWidth: 100,
+          {/* Edge Toggle / Dropdown */}
+          <div ref={arrowRef} style={{ position: "relative" }}>
+            <ToolButton
+              title={`Select Edge Style`}
+              active={interactionMode === "drawEdge" || arrowMenuOpen}
+              onClick={() => {
+                if (interactionMode === "drawEdge") {
+                  setArrowMenuOpen(!arrowMenuOpen);
+                } else {
+                  setInteractionMode("drawEdge");
+                }
+                setFontFamilyMenuOpen(false);
               }}
             >
-              {(["solid", "dashed"] as const).map((style) => (
-                <button
-                  key={style}
-                  onClick={() => {
-                    setEdgeStyle(style);
-                    setArrowMenuOpen(false);
-                  }}
-                  className="toolbar-dropdown-btn"
-                  data-active={edgeStyle === style}
-                  style={{
-                    height: 32,
-                    padding: "0 10px",
-                    borderRadius: 0,
-                    border: edgeStyle === style ? "2px solid #2c336c" : "2px solid transparent",
-                    background: edgeStyle === style ? "#2c336c" : "transparent",
-                    color: edgeStyle === style ? "#f3f3f2" : "#2c336c",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    whiteSpace: "nowrap",
-                    fontWeight: 700,
-                    fontSize: 11,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                  }}
-                  title={style === "solid" ? "Solid Line" : "Dashed Line"}
-                >
-                  <div style={{ width: 16, height: 16, fill: "currentColor", flexShrink: 0 }}>
-                    {style === "dashed" ? <DashedArrowIcon /> : <SolidArrowIcon />}
-                  </div>
-                  {style === "solid" ? "Solid" : "Dashed"}
-                </button>
-              ))}
-            </div>
-          )}
+              <div style={{ width: 18, height: 18, fill: "currentColor" }}>
+                {edgeStyle === "dashed" ? (
+                  <DashedArrowIcon />
+                ) : (
+                  <SolidArrowIcon />
+                )}
+              </div>
+            </ToolButton>
+
+            {arrowMenuOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  marginTop: 8,
+                  background: "#f3f3f2",
+                  border: "2px solid #2c336c",
+                  borderRadius: 0,
+                  padding: 4,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  boxShadow: "4px 4px 0px 0px #2c336c",
+                  zIndex: 1000,
+                  minWidth: 100,
+                }}
+              >
+                {(["solid", "dashed"] as const).map((style) => (
+                  <button
+                    key={style}
+                    onClick={() => {
+                      setEdgeStyle(style);
+                      setArrowMenuOpen(false);
+                    }}
+                    className="toolbar-dropdown-btn"
+                    data-active={edgeStyle === style}
+                    style={{
+                      height: 32,
+                      padding: "0 10px",
+                      borderRadius: 0,
+                      border: edgeStyle === style ? "2px solid #2c336c" : "2px solid transparent",
+                      background: edgeStyle === style ? "#2c336c" : "transparent",
+                      color: edgeStyle === style ? "#f3f3f2" : "#2c336c",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      whiteSpace: "nowrap",
+                      fontWeight: 700,
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                    }}
+                    title={style === "solid" ? "Solid Line" : "Dashed Line"}
+                  >
+                    <div style={{ width: 16, height: 16, fill: "currentColor", flexShrink: 0 }}>
+                      {style === "dashed" ? <DashedArrowIcon /> : <SolidArrowIcon />}
+                    </div>
+                    {style === "solid" ? "Solid" : "Dashed"}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Lock Toggle */}
+          <ToolButton
+            title={isLocked ? "Unlock canvas" : "Lock canvas"}
+            onClick={() => setIsLocked(!isLocked)}
+            active={isLocked}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              {isLocked ? (
+                <>
+                  <rect x="3" y="11" width="18" height="11" rx="0" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </>
+              ) : (
+                <>
+                  <rect x="3" y="11" width="18" height="11" rx="0" />
+                  <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                </>
+              )}
+            </svg>
+          </ToolButton>
         </div>
 
-        {/* Font Family Toggle / Dropdown */}
-        <div ref={fontFamilyRef} style={{ position: "relative" }}>
-          <ToolButton
-            title={`Select Font Family`}
-            active={fontFamilyMenuOpen}
-            onClick={() => {
-              setFontFamilyMenuOpen(!fontFamilyMenuOpen);
+        {/* Cluster B — Style */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "4px 10px",
+            background: "rgba(0,0,0,0.2)",
+            border: "2px solid rgba(255,255,255,0.25)",
+            borderRadius: 8,
+          }}
+        >
+          {/* Font Family Toggle / Dropdown */}
+          <div ref={fontFamilyRef} style={{ position: "relative" }}>
+            <ToolButton
+              title={`Select Font Family`}
+              active={fontFamilyMenuOpen}
+              onClick={() => {
+                setFontFamilyMenuOpen(!fontFamilyMenuOpen);
 
+                setArrowMenuOpen(false);
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 16,
+                  lineHeight: 1,
+                  fontWeight: 700,
+                  fontFamily:
+                    fontFamily === "comic"
+                      ? "ComicNeueSansID, sans-serif"
+                      : fontFamily === "montserrat"
+                        ? "Montserrat, sans-serif"
+                        : fontFamily === "poppins"
+                          ? "Poppins, sans-serif"
+                          : "var(--font-inter)",
+                }}
+              >
+                Aa
+              </div>
+            </ToolButton>
+
+            {fontFamilyMenuOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  marginTop: 8,
+                  background: "#f3f3f2",
+                  border: "2px solid #2c336c",
+                  borderRadius: 0,
+                  padding: 4,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  boxShadow: "4px 4px 0px 0px #2c336c",
+                  zIndex: 1000,
+                  minWidth: 120,
+                }}
+              >
+                {([
+                  { id: "inter", label: "Inter", family: "var(--font-inter)" },
+                  { id: "comic", label: "Comic", family: "ComicNeueSansID, sans-serif" },
+                  { id: "montserrat", label: "Montserrat", family: "Montserrat, sans-serif" },
+                  { id: "poppins", label: "Poppins", family: "Poppins, sans-serif" },
+                ] as const).map(({ id, label, family }) => (
+                  <button
+                    key={id}
+                    onClick={() => {
+                      setFontFamily(id);
+                      setFontFamilyMenuOpen(false);
+                    }}
+                    className="toolbar-dropdown-btn"
+                    data-active={fontFamily === id}
+                    style={{
+                      height: 34,
+                      padding: "0 10px",
+                      borderRadius: 0,
+                      border: fontFamily === id ? "2px solid #2c336c" : "2px solid transparent",
+                      background: fontFamily === id ? "#2c336c" : "transparent",
+                      color: fontFamily === id ? "#f3f3f2" : "#2c336c",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      whiteSpace: "nowrap",
+                      fontFamily: family,
+                      fontWeight: 700,
+                      fontSize: 13,
+                      letterSpacing: "0.02em",
+                    }}
+                    title={label}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Bold Toggle */}
+          <ToolButton
+            title="Bold Text"
+            active={fontStyle === "bold"}
+            onClick={() => {
+              setFontStyle(fontStyle === "bold" ? "normal" : "bold");
+              setFontFamilyMenuOpen(false);
               setArrowMenuOpen(false);
             }}
           >
-            <div
-              style={{
-                fontSize: 16,
-                lineHeight: 1,
-                fontWeight: 700,
-                fontFamily:
-                  fontFamily === "comic"
-                    ? "ComicNeueSansID, sans-serif"
-                    : fontFamily === "montserrat"
-                      ? "Montserrat, sans-serif"
-                      : fontFamily === "poppins"
-                        ? "Poppins, sans-serif"
-                        : "var(--font-inter)",
-              }}
-            >
-              Aa
+            <div style={{ width: 16, height: 16, fill: "currentColor" }}>
+              <BoldIcon />
             </div>
           </ToolButton>
 
-          {fontFamilyMenuOpen && (
-            <div
-              style={{
-                position: "absolute",
-                top: "100%",
-                left: 0,
-                marginTop: 8,
-                background: "#f3f3f2",
-                border: "2px solid #2c336c",
-                borderRadius: 0,
-                padding: 4,
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                boxShadow: "4px 4px 0px 0px #2c336c",
-                zIndex: 1000,
-                minWidth: 120,
-              }}
-            >
-              {([
-                { id: "inter", label: "Inter", family: "var(--font-inter)" },
-                { id: "comic", label: "Comic", family: "ComicNeueSansID, sans-serif" },
-                { id: "montserrat", label: "Montserrat", family: "Montserrat, sans-serif" },
-                { id: "poppins", label: "Poppins", family: "Poppins, sans-serif" },
-              ] as const).map(({ id, label, family }) => (
-                <button
-                  key={id}
-                  onClick={() => {
-                    setFontFamily(id);
-                    setFontFamilyMenuOpen(false);
-                  }}
-                  className="toolbar-dropdown-btn"
-                  data-active={fontFamily === id}
-                  style={{
-                    height: 34,
-                    padding: "0 10px",
-                    borderRadius: 0,
-                    border: fontFamily === id ? "2px solid #2c336c" : "2px solid transparent",
-                    background: fontFamily === id ? "#2c336c" : "transparent",
-                    color: fontFamily === id ? "#f3f3f2" : "#2c336c",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    whiteSpace: "nowrap",
-                    fontFamily: family,
-                    fontWeight: 700,
-                    fontSize: 13,
-                    letterSpacing: "0.02em",
-                  }}
-                  title={label}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Bold Toggle */}
-        <ToolButton
-          title="Bold Text"
-          active={fontStyle === "bold"}
-          onClick={() => {
-            setFontStyle(fontStyle === "bold" ? "normal" : "bold");
-            setFontFamilyMenuOpen(false);
-            setArrowMenuOpen(false);
-          }}
-        >
-          <div style={{ width: 16, height: 16, fill: "currentColor" }}>
-            <BoldIcon />
-          </div>
-        </ToolButton>
-
-        {/* Italic Toggle */}
-        <ToolButton
-          title="Italic Text"
-          active={fontStyle === "italic"}
-          onClick={() => {
-            setFontStyle(fontStyle === "italic" ? "normal" : "italic");
-            setFontFamilyMenuOpen(false);
-            setArrowMenuOpen(false);
-          }}
-        >
-          <div style={{ width: 16, height: 16, fill: "currentColor" }}>
-            <ItalicIcon />
-          </div>
-        </ToolButton>
-
-        <div
-          style={{
-            width: 2,
-            height: 24,
-            background: "rgba(255,255,255,0.2)",
-            margin: "0 4px",
-          }}
-        />
-
-        <ToolButton
-          title={isLocked ? "Unlock canvas" : "Lock canvas"}
-          onClick={() => setIsLocked(!isLocked)}
-          active={isLocked}
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
+          {/* Italic Toggle */}
+          <ToolButton
+            title="Italic Text"
+            active={fontStyle === "italic"}
+            onClick={() => {
+              setFontStyle(fontStyle === "italic" ? "normal" : "italic");
+              setFontFamilyMenuOpen(false);
+              setArrowMenuOpen(false);
+            }}
           >
-            {isLocked ? (
-              <>
-                <rect x="3" y="11" width="18" height="11" rx="0" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </>
-            ) : (
-              <>
-                <rect x="3" y="11" width="18" height="11" rx="0" />
-                <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-              </>
-            )}
-          </svg>
-        </ToolButton>
+            <div style={{ width: 16, height: 16, fill: "currentColor" }}>
+              <ItalicIcon />
+            </div>
+          </ToolButton>
 
-        {/* Separator */}
-        <div
-          style={{
-            width: 2,
-            height: 24,
-            background: "rgba(255,255,255,0.2)",
-            margin: "0 4px",
-          }}
-        />
+          <div
+            style={{
+              width: 2,
+              height: 24,
+              background: "rgba(255,255,255,0.2)",
+              margin: "0 2px",
+            }}
+          />
 
-        {/* Color Palette */}
-        <div style={{ display: "flex", gap: 6 }}>
-          {COLOR_PALETTE.map((color) => (
-            <div
-              key={color}
-              onClick={() => setNodeColor(color)}
-              title={color}
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: "50%",
-                background: color,
-                cursor: "pointer",
-                border:
-                  nodeColor === color
-                    ? "3px solid #636798"
-                    : "2px solid rgba(255,255,255,0.4)",
-                boxShadow: nodeColor === color ? `0 0 0 2px #ffffff` : "none",
-                transition: "all 150ms",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "scale(1.2)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "scale(1)";
-              }}
-            />
-          ))}
+          {/* Color Palette */}
+          <div style={{ display: "flex", gap: 6 }}>
+            {COLOR_PALETTE.map((color) => (
+              <div
+                key={color}
+                onClick={() => setNodeColor(color)}
+                title={color}
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: "50%",
+                  background: color,
+                  cursor: "pointer",
+                  border:
+                    nodeColor === color
+                      ? "3px solid #636798"
+                      : "2px solid rgba(255,255,255,0.4)",
+                  boxShadow: nodeColor === color ? `0 0 0 2px #ffffff` : "none",
+                  transition: "all 150ms",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "scale(1.2)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -613,17 +710,7 @@ export default function Toolbar() {
           justifyContent: "flex-end",
         }}
       >
-        {/* Divider */}
-        <div
-          style={{
-            width: 1,
-            height: 24,
-            background: "rgba(255,255,255,0.3)",
-            margin: "0 8px",
-          }}
-        />
-
-        {/* Share button */}
+        {/* Primary actions */}
         <button
           style={{
             height: 32,
@@ -726,9 +813,8 @@ export default function Toolbar() {
           }}
         />
 
-        {/* Save status */}
         <button
-          onClick={triggerSave}
+          onClick={handleSaveClick}
           style={{
             fontSize: 12,
             fontWeight: 700,
@@ -776,7 +862,24 @@ export default function Toolbar() {
           )}
           {saveStatus === "idle" && "Save"}
         </button>
+
+        <UserMenu />
       </div>
+
+      <LeaveConfirmModal
+        open={leaveConfirmOpen}
+        saving={leaveSaving}
+        onSave={handleSaveAndLeave}
+        onDiscard={handleDiscardAndLeave}
+        onCancel={() => setLeaveConfirmOpen(false)}
+      />
+
+      <RenameProjectModal
+        open={renameModalOpen}
+        saving={renameSaving}
+        onSave={handleRenameModalSave}
+        onSkip={handleRenameModalSkip}
+      />
     </div>
   );
 }

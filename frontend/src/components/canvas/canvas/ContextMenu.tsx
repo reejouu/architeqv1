@@ -1,7 +1,7 @@
 "use client";
 
 import { useCanvasStore } from "@/store/canvasStore";
-import { useReactFlow } from "@xyflow/react";
+import { useReactFlow, type Node } from "@xyflow/react";
 
 const MenuItem = ({
     label,
@@ -21,41 +21,49 @@ const MenuItem = ({
         style={{
             height: 32,
             padding: "0 10px",
-            borderRadius: 6,
             display: "flex",
             alignItems: "center",
             gap: 10,
-            fontSize: 13,
-            color: danger ? "#EF4444" : "#A1A1AA",
+            fontSize: 12,
+            fontWeight: 700,
+            color: danger ? "#bf3d4a" : "#2c336c",
             cursor: "pointer",
-            transition: "background 100ms, color 100ms",
+            transition: "background 100ms",
         }}
         onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = danger
-                ? "rgba(239,68,68,0.1)"
-                : "rgba(139,92,246,0.12)";
-            if (!danger) (e.currentTarget as HTMLElement).style.color = "#F4F4F8";
+            (e.currentTarget as HTMLElement).style.background = danger ? "#e0707a" : "#ddb9ac";
         }}
         onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.background = "transparent";
-            (e.currentTarget as HTMLElement).style.color = danger ? "#EF4444" : "#A1A1AA";
         }}
     >
-        <span style={{ flexShrink: 0 }}>{icon}</span>
+        <span style={{ flexShrink: 0, display: "flex" }}>{icon}</span>
         <span style={{ flex: 1 }}>{label}</span>
-        {shortcut && <span style={{ fontSize: 11, color: "#52525B" }}>{shortcut}</span>}
+        {shortcut && <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(44,51,108,0.55)" }}>{shortcut}</span>}
     </div>
 );
 
 const Separator = () => (
-    <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "4px 0" }} />
+    <div style={{ height: 2, background: "#2c336c", opacity: 0.15, margin: "4px 0" }} />
 );
 
 export default function ContextMenu() {
     const { contextMenu, setContextMenu, selectNode } = useCanvasStore();
-    const { fitView, zoomTo, deleteElements } = useReactFlow();
+    const { fitView, zoomTo, deleteElements, screenToFlowPosition } = useReactFlow();
 
     if (!contextMenu) return null;
+
+    const handleAddNode = () => {
+        const position = screenToFlowPosition({ x: contextMenu.x, y: contextMenu.y });
+        const newNode: Node = {
+            id: `node-${Date.now()}`,
+            type: "archNode",
+            position,
+            data: { type: "custom", label: "Custom" },
+        };
+        useCanvasStore.getState().addNode(newNode);
+        setContextMenu(null);
+    };
 
     const handleDeleteElement = () => {
         if (contextMenu.nodeId) {
@@ -83,12 +91,10 @@ export default function ContextMenu() {
                 left: contextMenu.x,
                 top: contextMenu.y,
                 width: 200,
-                background: "rgba(15,15,26,0.96)",
-                backdropFilter: "blur(20px)",
-                border: "1px solid rgba(139,92,246,0.25)",
-                borderRadius: 10,
-                padding: 6,
-                boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,92,246,0.08)",
+                background: "#f3f3f2",
+                border: "2px solid #2c336c",
+                padding: 4,
+                boxShadow: "4px 4px 0px 0px #2c336c",
                 zIndex: 300,
             }}
             onClick={(e) => e.stopPropagation()}
@@ -98,6 +104,7 @@ export default function ContextMenu() {
                     <MenuItem
                         label="Add Node"
                         shortcut="⌘K"
+                        onClick={handleAddNode}
                         icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>}
                     />
                     <MenuItem

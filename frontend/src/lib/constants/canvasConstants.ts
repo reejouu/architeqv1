@@ -16,6 +16,14 @@ export const COLOR_PALETTE = [
   "#b08840", // Input (Muted Bronze)
 ];
 export const NODE_TYPES_CONFIG = {
+    custom: {
+        label: "Custom",
+        color: "#7a7a9e",
+        rgb: "122,122,158",
+        icon: "plus",
+        borderColor: "rgba(122,122,158,0.4)",
+        bg: "rgba(122,122,158,0.06)",
+    },
     auth: {
         label: "Auth",
         color: "#7b6fa8",
