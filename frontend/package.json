@@ -11,6 +11,9 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
     "@google/generative-ai": "^0.24.1",
+    "@liveblocks/client": "^3.20.1",
+    "@liveblocks/node": "^3.20.1",
+    "@liveblocks/zustand": "^3.20.1",
     "@prisma/client": "^6.19.3",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.8",
@@ -31,6 +34,7 @@
     "dotenv": "^17.3.1",
     "jose": "^6.2.3",
     "lucide-react": "^0.563.0",
+    "nanoid": "^5.1.16",
     "next": "15.5.12",
     "openai": "^6.45.0",
     "prisma": "^6.19.3",

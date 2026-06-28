@@ -99,8 +99,12 @@ export default function CanvasPage() {
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }, []);
 
-    // Resolve the user's project and hydrate the canvas from its latest saved version, if any
+    // Resolve the user's project and hydrate the canvas from its latest saved version, if any.
+    // Skip this when joining a shared room — room storage provides nodes/edges instead.
     useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("room")) return; // Joiner — room storage will hydrate
+
         let cancelled = false;
 
         fetch("/api/projects/me")

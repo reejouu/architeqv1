@@ -1,7 +1,10 @@
 import { create } from "zustand";
 import type { Node, Edge } from "@xyflow/react";
+import { liveblocks } from "@liveblocks/zustand";
+import type { WithLiveblocks } from "@liveblocks/zustand";
 import { SAMPLE_NODES, SAMPLE_EDGES, type NodeType } from "@/lib/constants/canvasConstants";
 import { transformGraph, type RawGraph } from "@/lib/graph/graphTransform";
+import { liveblocksClient } from "@/lib/liveblocks/liveblocksClient";
 
 type SaveStatus = "idle" | "saving" | "saved";
 type ActiveMode = "design" | "review" | "export";
@@ -53,6 +56,10 @@ interface CanvasState {
     // mousedown over a sidebar card, cleared on mouseup wherever it lands.
     draggedPaletteType: NodeType | null;
 
+    // Collaboration cursor (broadcast via Liveblocks presence)
+    cursor: { x: number; y: number } | null;
+    setCursor: (pos: { x: number; y: number } | null) => void;
+
     // History
     history: HistoryState;
     pushHistory: () => void;
@@ -91,7 +98,9 @@ interface CanvasState {
     renameProject: (title: string) => Promise<boolean>;
 }
 
-export const useCanvasStore = create<CanvasState>((set, get) => ({
+export const useCanvasStore = create<WithLiveblocks<CanvasState>>()(
+  liveblocks(
+    (set, get) => ({
     nodes: [],
     edges: [],
     selectedNodeId: null,
@@ -118,6 +127,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     selectedEdgeIds: [],
     interactionMode: "select",
     draggedPaletteType: null,
+    cursor: null,
     history: { past: [], future: [] },
 
     pushHistory: () =>
@@ -184,6 +194,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     setInteractionMode: (mode) => set({ interactionMode: mode }),
 
     setDraggedPaletteType: (type) => set({ draggedPaletteType: type }),
+
+    setCursor: (pos) => set({ cursor: pos }),
 
     setNodes: (nodes) =>
         set((state) => {
@@ -361,4 +373,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
             setTimeout(() => set(s => ({ fitViewTrigger: s.fitViewTrigger + 1 })), 150);
         }, SAMPLE_NODES.length * 150 + 200);
     },
-}));
+  }),
+  {
+    client: liveblocksClient,
+    storageMapping: { nodes: true, edges: true },
+    presenceMapping: { cursor: true },
+  }),
+);

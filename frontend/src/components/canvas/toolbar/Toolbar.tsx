@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCanvasStore } from "@/store/canvasStore";
 import { useEffect, useRef } from "react";
+import { useCollaboration } from "@/hooks/useCollaboration";
 import ArrowIcon from "../../../../public/icons/arrow/arrow";
 import SolidArrowIcon from "../../../../public/icons/arrow/solid-arrow";
 import DashedArrowIcon from "../../../../public/icons/arrow/dashed-arrow";
@@ -112,6 +113,22 @@ export default function Toolbar() {
     setInteractionMode,
   } = useCanvasStore();
 
+  const {
+    roomId,
+    isInRoom,
+    isHost,
+    others,
+    connectionStatus,
+    startRoom,
+    joinRoom,
+    leaveRoom,
+  } = useCollaboration();
+
+  const [joinInput, setJoinInput] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [collabMenuOpen, setCollabMenuOpen] = useState(false);
+  const collabRef = useRef<HTMLDivElement>(null);
+
   const selectedNode = selectedNodeId
     ? nodes.find((n) => n.id === selectedNodeId)
     : null;
@@ -166,6 +183,17 @@ export default function Toolbar() {
         !fontFamilyRef.current.contains(e.target as Node)
       ) {
         setFontFamilyMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close collab menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (collabRef.current && !collabRef.current.contains(e.target as globalThis.Node)) {
+        setCollabMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -710,51 +738,294 @@ export default function Toolbar() {
           justifyContent: "flex-end",
         }}
       >
-        {/* Primary actions */}
-        <button
-          style={{
-            height: 32,
-            padding: "0 14px",
-            borderRadius: 0,
-            border: "2px solid rgba(255,255,255,0.3)",
-            background: "rgba(255,255,255,0.1)",
-            color: "#f3f3f2",
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            boxShadow: "none",
-            transition: "all 150ms",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background =
-              "rgba(255,255,255,0.2)";
-            (e.currentTarget as HTMLElement).style.transform = "none";
-            (e.currentTarget as HTMLElement).style.boxShadow = "none";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background =
-              "rgba(255,255,255,0.1)";
-            (e.currentTarget as HTMLElement).style.transform =
-              "translate(0, 0)";
-            (e.currentTarget as HTMLElement).style.boxShadow = "none";
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
-          Share
-        </button>
+        {/* Collaboration controls */}
+        <div ref={collabRef} style={{ position: "relative", display: "flex", alignItems: "center", gap: 6 }}>
+          {/* Connected user avatars */}
+          {isInRoom && others.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", marginRight: 4 }}>
+              {others.slice(0, 5).map((user) => {
+                const info = user.info as { name: string; color: string } | undefined;
+                if (!info) return null;
+                const initials = info.name
+                  .split(" ")
+                  .map((w: string) => w[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2);
+                return (
+                  <div
+                    key={user.connectionId}
+                    title={info.name}
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      background: info.color,
+                      color: "#fff",
+                      fontSize: 10,
+                      fontWeight: 800,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "2px solid #636798",
+                      marginLeft: -6,
+                      cursor: "default",
+                    }}
+                  >
+                    {initials}
+                  </div>
+                );
+              })}
+              {others.length > 5 && (
+                <div
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.2)",
+                    color: "#f3f3f2",
+                    fontSize: 9,
+                    fontWeight: 800,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "2px solid #636798",
+                    marginLeft: -6,
+                  }}
+                >
+                  +{others.length - 5}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Connection status dot */}
+          {isInRoom && (
+            <div
+              title={`Status: ${connectionStatus}`}
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: connectionStatus === "connected" ? "#10B981" : connectionStatus === "connecting" || connectionStatus === "reconnecting" ? "#FBBF24" : "#EF4444",
+                border: "1px solid rgba(0,0,0,0.2)",
+                flexShrink: 0,
+              }}
+            />
+          )}
+
+          {!isInRoom ? (
+            <button
+              onClick={() => setCollabMenuOpen(!collabMenuOpen)}
+              style={{
+                height: 32,
+                padding: "0 14px",
+                borderRadius: 0,
+                border: "2px solid rgba(255,255,255,0.3)",
+                background: "rgba(255,255,255,0.1)",
+                color: "#f3f3f2",
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                boxShadow: "none",
+                transition: "all 150ms",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.2)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Collaborate
+            </button>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {/* Room code display + copy */}
+              <button
+                onClick={() => {
+                  if (roomId) {
+                    navigator.clipboard.writeText(roomId);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }
+                }}
+                title="Copy room code"
+                style={{
+                  height: 32,
+                  padding: "0 10px",
+                  borderRadius: 0,
+                  border: "2px solid rgba(255,255,255,0.3)",
+                  background: "rgba(255,255,255,0.1)",
+                  color: "#f3f3f2",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontFamily: "monospace",
+                  transition: "all 150ms",
+                }}
+              >
+                {copied ? "✓ Copied" : roomId?.replace("architeq-", "")}
+              </button>
+
+              {/* Leave button */}
+              <button
+                onClick={leaveRoom}
+                title="Leave room"
+                style={{
+                  height: 32,
+                  padding: "0 10px",
+                  borderRadius: 0,
+                  border: "2px solid rgba(239,68,68,0.5)",
+                  background: "rgba(239,68,68,0.15)",
+                  color: "#fca5a5",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  transition: "all 150ms",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.15)";
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Leave
+              </button>
+            </div>
+          )}
+
+          {/* Dropdown menu for collaborate (start / join) */}
+          {collabMenuOpen && !isInRoom && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                right: 0,
+                marginTop: 8,
+                background: "#f3f3f2",
+                border: "2px solid #2c336c",
+                borderRadius: 0,
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                boxShadow: "4px 4px 0px 0px #2c336c",
+                zIndex: 1000,
+                minWidth: 220,
+              }}
+            >
+              <button
+                onClick={() => {
+                  startRoom();
+                  setCollabMenuOpen(false);
+                }}
+                style={{
+                  height: 36,
+                  padding: "0 14px",
+                  border: "2px solid #2c336c",
+                  background: "#2c336c",
+                  color: "#f3f3f2",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  boxShadow: "3px 3px 0px 0px #2c336c",
+                  transition: "all 150ms",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "#c78caf";
+                  (e.currentTarget as HTMLElement).style.color = "#2c336c";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "#2c336c";
+                  (e.currentTarget as HTMLElement).style.color = "#f3f3f2";
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                Start Room
+              </button>
+
+              <div style={{ width: "100%", height: 1, background: "#ddd" }} />
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#636798", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Join a Room
+                </span>
+                <div style={{ display: "flex", gap: 4 }}>
+                  <input
+                    value={joinInput}
+                    onChange={(e) => setJoinInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        joinRoom(joinInput);
+                        setCollabMenuOpen(false);
+                      }
+                    }}
+                    placeholder="Paste room code"
+                    style={{
+                      flex: 1,
+                      height: 32,
+                      padding: "0 8px",
+                      border: "2px solid #2c336c",
+                      background: "#fff",
+                      color: "#2c336c",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      fontFamily: "monospace",
+                      outline: "none",
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      joinRoom(joinInput);
+                      setCollabMenuOpen(false);
+                    }}
+                    disabled={!joinInput.trim()}
+                    style={{
+                      height: 32,
+                      padding: "0 10px",
+                      border: "2px solid #2c336c",
+                      background: joinInput.trim() ? "#636798" : "#ccc",
+                      color: "#f3f3f2",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: joinInput.trim() ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    Join
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Generate button */}
         <button
@@ -815,13 +1086,15 @@ export default function Toolbar() {
 
         <button
           onClick={handleSaveClick}
+          disabled={isInRoom && !isHost}
+          title={isInRoom && !isHost ? "Only the host can save" : "Save"}
           style={{
             fontSize: 12,
             fontWeight: 700,
-            color: "#f3f3f2",
+            color: isInRoom && !isHost ? "rgba(255,255,255,0.3)" : "#f3f3f2",
             background: "transparent",
             border: "none",
-            cursor: "pointer",
+            cursor: isInRoom && !isHost ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             gap: 6,

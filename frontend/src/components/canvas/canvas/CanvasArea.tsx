@@ -22,6 +22,7 @@ import ArchNode from "./nodes/ArchNode";
 import ArchEdge from "./edges/ArchEdge";
 import DependencyEdge from "./edges/DependencyEdge";
 import CriticalEdge from "./edges/CriticalEdge";
+import LiveCursors from "./LiveCursors";
 
 const nodeTypes = { archNode: ArchNode };
 const edgeTypes = {
@@ -209,7 +210,11 @@ export default function CanvasArea() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(storeNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(storeEdges);
-  const { screenToFlowPosition, getEdges, getNodes, fitView } = useReactFlow();
+  const { screenToFlowPosition, getEdges, getNodes, fitView, flowToScreenPosition } = useReactFlow();
+
+  // Read sidebarOpen to compute viewport offset for LiveCursors
+  const sidebarOpen = useCanvasStore((s) => s.sidebarOpen);
+  const setCursor = useCanvasStore((s) => s.setCursor);
 
   // Sync store → React Flow state
   useEffect(() => {
@@ -425,6 +430,11 @@ export default function CanvasArea() {
   return (
     <div
       style={{ width: "100%", height: "100%", position: "relative" }}
+      onPointerMove={(e) => {
+        const flowPos = screenToFlowPosition({ x: e.clientX, y: e.clientY });
+        setCursor({ x: flowPos.x, y: flowPos.y });
+      }}
+      onPointerLeave={() => setCursor(null)}
     >
       <ArrowMarkerDefs />
       <ReactFlow
@@ -488,6 +498,9 @@ export default function CanvasArea() {
       {isEmpty && !isGenerateModalOpen && (
         <EmptyState onGenerate={openGenerateModal} />
       )}
+
+      {/* Live collaboration cursors */}
+      <LiveCursors viewportOffset={{ top: 64, left: sidebarOpen ? 304 : 48 }} />
     </div>
   );
 }

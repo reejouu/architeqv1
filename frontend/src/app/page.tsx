@@ -13,10 +13,11 @@ import WhyDifferent from "@/components/landing/WhyDifferent";
 import CollaborationSection from "@/components/landing/CollaborationSection";
 import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/Footer";
+import { Suspense } from "react";
 import LoginModal from "@/components/auth/LoginModal";
 import OnboardingModal from "@/components/auth/OnboardingModal";
 
-export default function LandingPage() {
+function LandingPageContent() {
   useScrollReveal();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -71,5 +72,13 @@ export default function LandingPage() {
       <LoginModal open={loginOpen} onClose={closeLogin} onAuthenticated={handleAuthenticated} />
       <OnboardingModal open={onboardingOpen} />
     </div>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <Suspense fallback={null}>
+      <LandingPageContent />
+    </Suspense>
   );
 }
