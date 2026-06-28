@@ -44,6 +44,62 @@ export default function ArchEdge({
   const strokeWidth = selected ? 3 : 2;
   const strokeDasharray = edgeStyle === "dashed" ? "6 6" : undefined;
 
+  const laneY = data?.laneY as number | undefined;
+
+  // ── 1b. Renderer-lane path: draw the whole mid-run at a derived corridor y so
+  //         independent edges in the same corridor never overlap (no waypoints added).
+  if (laneY != null) {
+    const sx = sourceX + (exitOffset?.dx ?? 0) + offset;
+    const sy = sourceY + (exitOffset?.dy ?? 0);
+    const tx = targetX + (entryOffset?.dx ?? 0) + offset;
+    const ty = targetY + (entryOffset?.dy ?? 0);
+    const path = buildOrthogonalPath(
+      [
+        { x: sx, y: sy },
+        { x: sx, y: laneY },
+        { x: tx, y: laneY },
+        { x: tx, y: ty },
+      ],
+      8,
+    );
+    return (
+      <>
+        <defs>
+          <marker
+            id={`archArrowSelected-${id}`}
+            viewBox="-10 -10 20 20"
+            refX="0"
+            refY="0"
+            markerWidth="12.5"
+            markerHeight="12.5"
+            markerUnits="strokeWidth"
+            orient="auto-start-reverse"
+          >
+            <polyline
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points="-5,-4 0,0 -5,4 -5,-4"
+              style={{ stroke: "#a8567e", fill: "#a8567e", strokeWidth: 1 }}
+            />
+          </marker>
+        </defs>
+        <BaseEdge
+          id={id}
+          path={path}
+          markerEnd={selected ? `url(#archArrowSelected-${id})` : markerEnd}
+          style={{
+            stroke: strokeColor,
+            strokeWidth: strokeWidth,
+            strokeOpacity: 1,
+            strokeLinecap: "round",
+            strokeDasharray: strokeDasharray,
+            fill: "none",
+          }}
+        />
+      </>
+    );
+  }
+
   // ── 2. Primary Orthogonal path (Engine routed) ─────────────────────────────
   if (exitOffset && entryOffset && routingType !== "smoothstep") {
     // Calculate the absolute handle positions based on live node coords + layout engine offsets

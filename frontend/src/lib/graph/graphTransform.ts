@@ -186,6 +186,7 @@ export function transformGraph(
                 exitPort,
                 entryPort,
                 routingType: le.type,
+                laneY: (le.data as any).laneY,
             },
         };
     });

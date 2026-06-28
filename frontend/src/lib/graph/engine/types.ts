@@ -44,6 +44,7 @@ export interface InternalEdge {
     entryPort: "top" | "bottom" | "left" | "right";
     routingType: "smoothstep" | "orthogonal" | "orthogonal-waypoint";
     parallelOffset: number;
+    laneY?: number;   // derived render hint: y of the horizontal mid-run (never persisted)
     synthetic: boolean;
     raw: InputEdge;
 }
@@ -69,6 +70,7 @@ export interface LayoutOutput {
             entryPort: string;
             waypoints: { x: number; y: number }[];
             parallelOffset: number;
+            laneY?: number;   // derived render hint (never persisted)
         };
         style: { stroke: string; strokeWidth: number };
     }[];

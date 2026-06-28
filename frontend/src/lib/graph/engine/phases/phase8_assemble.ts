@@ -73,6 +73,7 @@ export function phase8_assemble(
                     exitPort: e.exitPort,
                     entryPort: e.entryPort,
                     parallelOffset: e.parallelOffset ?? 0,
+                    laneY: e.laneY,
                 },
                 style: { stroke: "#636798", strokeWidth: 1.5 },
             })),

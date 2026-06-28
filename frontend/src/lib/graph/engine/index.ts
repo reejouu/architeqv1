@@ -91,7 +91,7 @@ export function computeLayout(
 
     // ── Phase 7: Parallel edge separation ────────────────────────────────────
     const t7 = performance.now();
-    phase7_parallel(internalEdges, log);
+    phase7_parallel(internalEdges, internalNodes, config, log);
     log.push(`Phase 7 (Parallel): ${(performance.now() - t7).toFixed(1)}ms`);
 
     // ── Phase 8: Assemble + final collision diagnostic ───────────────────────
