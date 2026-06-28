@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import {
   ReactFlow,
   Background,
@@ -18,7 +18,6 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCanvasStore } from "@/store/canvasStore";
-import { NODE_TYPES_CONFIG, NodeType } from "@/lib/constants/canvasConstants";
 import ArchNode from "./nodes/ArchNode";
 import ArchEdge from "./edges/ArchEdge";
 import DependencyEdge from "./edges/DependencyEdge";
@@ -198,7 +197,6 @@ export default function CanvasArea() {
     setContextMenu,
     openGenerateModal,
     isGenerateModalOpen,
-    triggerSave,
     fitViewTrigger,
     setSelectedEdges,
     setSelectedNodeIds,
@@ -206,11 +204,11 @@ export default function CanvasArea() {
     selectedNodeId,
     selectedNodeIds,
     interactionMode,
+    draggedPaletteType,
   } = useCanvasStore();
 
   const [nodes, setNodes, onNodesChange] = useNodesState(storeNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(storeEdges);
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { screenToFlowPosition, getEdges, getNodes, fitView } = useReactFlow();
 
   // Sync store → React Flow state
@@ -277,25 +275,21 @@ export default function CanvasArea() {
 
   const onNodeDragStop = useCallback(() => {
     storeSetNodes(getNodes());
-    const timeout = setTimeout(() => triggerSave(), 800);
-    return () => clearTimeout(timeout);
-  }, [storeSetNodes, getNodes, triggerSave]);
+  }, [storeSetNodes, getNodes]);
 
   const onNodesDelete = useCallback(() => {
     useCanvasStore.getState().pushHistory();
     setTimeout(() => {
       storeSetNodes(getNodes());
-      triggerSave();
     }, 0);
-  }, [storeSetNodes, getNodes, triggerSave]);
+  }, [storeSetNodes, getNodes]);
 
   const onEdgesDelete = useCallback(() => {
     useCanvasStore.getState().pushHistory();
     setTimeout(() => {
       storeSetEdges(getEdges());
-      triggerSave();
     }, 0);
-  }, [storeSetEdges, getEdges, triggerSave]);
+  }, [storeSetEdges, getEdges]);
 
   const onNodeClick = useCallback((e: React.MouseEvent, node: Node) => {
     // Ctrl/Cmd+click for multi-select
@@ -309,21 +303,32 @@ export default function CanvasArea() {
       useCanvasStore.setState({
         selectedNodeIds: newIds,
         selectedNodeId: newIds.length === 1 ? newIds[0] : newIds.length === 0 ? null : node.id,
+        toolbarOpenNodeId: null,
       });
-    } else {
-      // Single click only selects the node (shows floating toolbar), doesn't open right panel
-      useCanvasStore.setState({ selectedNodeId: node.id, selectedNodeIds: [node.id] });
+      return;
     }
+
+    // Single click selects and shows the floating toolbar.
+    useCanvasStore.setState({
+      selectedNodeId: node.id,
+      selectedNodeIds: [node.id],
+      toolbarOpenNodeId: node.id,
+    });
   }, []);
 
   const onNodeDoubleClick = useCallback((_: React.MouseEvent, node: Node) => {
-    // Double click selects AND opens the right panel
+    // Double click selects, keeps the toolbar, and opens the right panel.
     if (useCanvasStore.getState().interactionMode === "drawEdge") return;
-    useCanvasStore.setState({ selectedNodeId: node.id, rightPanelOpen: true });
+    useCanvasStore.setState({
+      selectedNodeId: node.id,
+      selectedNodeIds: [node.id],
+      toolbarOpenNodeId: node.id,
+      rightPanelOpen: true,
+    });
   }, []);
 
   const onPaneClick = useCallback(() => {
-    useCanvasStore.setState({ selectedNodeId: null, selectedNodeIds: [], rightPanelOpen: false });
+    useCanvasStore.setState({ selectedNodeId: null, selectedNodeIds: [], toolbarOpenNodeId: null, rightPanelOpen: false });
     setContextMenu(null);
   }, [setContextMenu]);
 
@@ -362,42 +367,10 @@ export default function CanvasArea() {
     [setContextMenu],
   );
 
-  // Drop handler for dragging from NodePalette
-  const onDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      useCanvasStore.getState().pushHistory();
-      const type = e.dataTransfer.getData(
-        "application/architeq-node",
-      ) as NodeType;
-      if (!type || !NODE_TYPES_CONFIG[type]) return;
-
-      const position = screenToFlowPosition({ x: e.clientX, y: e.clientY });
-      const config = NODE_TYPES_CONFIG[type];
-
-      // Get current default styles
-      const { fontStyle } = useCanvasStore.getState();
-
-      const newNode: Node = {
-        id: `node-${Date.now()}`,
-        type: "archNode",
-        position,
-        data: {
-          type,
-          label: config.label,
-          fontStyle,
-        },
-      };
-      setNodes((nds) => [...nds, newNode]);
-      setTimeout(() => storeSetNodes(getNodes()), 0);
-    },
-    [screenToFlowPosition, setNodes, storeSetNodes, getNodes],
-  );
-
-  const onDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  }, []);
+  // Dropping a palette item onto the canvas is handled centrally in
+  // CanvasPage.tsx (it owns the canvas viewport bounds and sits inside the
+  // ReactFlowProvider, so it can call screenToFlowPosition itself and append
+  // straight to the store — see the draggedPaletteType effect there).
 
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes, edges: selectedEdges }: { nodes: Node[]; edges: Edge[] }) => {
@@ -451,7 +424,6 @@ export default function CanvasArea() {
 
   return (
     <div
-      ref={reactFlowWrapper}
       style={{ width: "100%", height: "100%", position: "relative" }}
     >
       <ArrowMarkerDefs />
@@ -472,8 +444,6 @@ export default function CanvasArea() {
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
         onSelectionChange={onSelectionChange}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         deleteKeyCode={["Backspace", "Delete"]}
@@ -496,11 +466,13 @@ export default function CanvasArea() {
         connectionMode={ConnectionMode.Loose}
         snapToGrid={false}
         panOnDrag={!isLocked}
-        zoomOnScroll={!isLocked}
+        zoomOnScroll={!isLocked && !draggedPaletteType}
+        zoomOnPinch={!isLocked && !draggedPaletteType}
         zoomOnDoubleClick={!isLocked}
         elementsSelectable={true}
         nodesDraggable={!isLocked}
         nodesConnectable={!isLocked && interactionMode === "drawEdge"}
+        connectOnClick={false}
         edgesFocusable={!isLocked}
         style={{ background: "transparent" }}
         proOptions={{ hideAttribution: true }}

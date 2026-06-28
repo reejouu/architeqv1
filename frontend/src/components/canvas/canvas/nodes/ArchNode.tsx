@@ -107,7 +107,7 @@ export default function ArchNode({
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { deleteElements } = useReactFlow();
-  const { addNode, nodes, interactionMode, selectedNodeIds } = useCanvasStore();
+  const { addNode, nodes, interactionMode, selectedNodeIds, toolbarOpenNodeId } = useCanvasStore();
 
   // Ambient pulse every 4–6s
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function ArchNode({
 
       {/* ── Floating toolbar (NodeToolbar = auto pan/zoom aware) ── */}
       <NodeToolbar
-        isVisible={selected && interactionMode !== "drawEdge" && selectedNodeIds.length <= 1}
+        isVisible={toolbarOpenNodeId === id && interactionMode !== "drawEdge" && selectedNodeIds.length <= 1}
         position={Position.Top}
         offset={10}
       >
@@ -297,7 +297,7 @@ export default function ArchNode({
                 : hovered
                   ? "4px 4px 0px 0px #2c336c"
                   : "3px 3px 0px 0px #2c336c",
-            cursor: "pointer",
+            cursor: "default",
             userSelect: "none",
             overflow: "hidden",
             display: "flex",

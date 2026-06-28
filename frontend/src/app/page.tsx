@@ -27,7 +27,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (modalParam === "login") {
-      router.push("/canvas");
+      setLoginOpen(true);
     } else if (modalParam === "onboarding") {
       setOnboardingOpen(true);
       setLoginOpen(false);
@@ -35,13 +35,25 @@ export default function LandingPage() {
   }, [modalParam, router]);
 
   const openLogin = useCallback(() => {
-    router.push("/canvas");
-  }, [router]);
+    setLoginOpen(true);
+  }, []);
 
   const closeLogin = useCallback(() => {
     setLoginOpen(false);
     if (modalParam) router.replace("/", { scroll: false });
   }, [modalParam, router]);
+
+  const handleAuthenticated = useCallback(
+    (user: { onboardingComplete: boolean }) => {
+      setLoginOpen(false);
+      if (!user.onboardingComplete) {
+        setOnboardingOpen(true);
+      } else {
+        router.push("/canvas");
+      }
+    },
+    [router],
+  );
 
   return (
     <div className="relative min-h-screen z-10 font-sans">
@@ -56,7 +68,7 @@ export default function LandingPage() {
       <FinalCTA />
       <Footer />
 
-      <LoginModal open={loginOpen} onClose={closeLogin} />
+      <LoginModal open={loginOpen} onClose={closeLogin} onAuthenticated={handleAuthenticated} />
       <OnboardingModal open={onboardingOpen} />
     </div>
   );

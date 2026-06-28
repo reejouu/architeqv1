@@ -1,20 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NODE_TYPES_CONFIG, NodeType } from "@/lib/constants/canvasConstants";
+import { NODE_ICONS as ICONS } from "@/lib/constants/nodeIcons";
 import { useCanvasStore } from "@/store/canvasStore";
 
-const ICONS: Record<string, React.ReactElement> = {
-    shield: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
-    zap: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>,
-    "credit-card": <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>,
-    database: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>,
-    "layout-dashboard": <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="9" /><rect x="14" y="3" width="7" height="5" /><rect x="14" y="12" width="7" height="9" /><rect x="3" y="16" width="7" height="5" /></svg>,
-    bell: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>,
-    calendar: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>,
-    layers: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></svg>,
-    list: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>,
-};
+function timeAgo(date: Date | null): string {
+    if (!date) return "Not saved yet";
+    const diffMs = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+}
 
 const ChevronIcon = ({ open }: { open: boolean }) => (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
@@ -23,17 +24,129 @@ const ChevronIcon = ({ open }: { open: boolean }) => (
     </svg>
 );
 
-export default function LeftSidebar() {
-    const [paletteOpen, setPaletteOpen] = useState(true);
-    const [layersOpen, setLayersOpen] = useState(true);
-    const { nodes, selectedNodeId, selectNode, sidebarOpen, setSidebarOpen } = useCanvasStore();
+interface VersionEntry {
+    id: string;
+    versionNumber: number;
+    createdAt: string;
+}
 
-    const handleDragStart = (e: React.DragEvent, type: NodeType) => {
-        e.dataTransfer.setData("application/architeq-node", type);
-        e.dataTransfer.effectAllowed = "move";
+export default function LeftSidebar() {
+    const [paletteOpen, setPaletteOpen] = useState(false);
+    const [projectOpen, setProjectOpen] = useState(true);
+    const [editingName, setEditingName] = useState(false);
+    const [nameInput, setNameInput] = useState("");
+    const [versions, setVersions] = useState<VersionEntry[]>([]);
+    const [confirmDeleteVersion, setConfirmDeleteVersion] = useState<number | null>(null);
+    const [busyVersion, setBusyVersion] = useState<number | null>(null);
+    // Only one version mutation (delete) may be in flight at a time — the
+    // version numbers the panel sends are only valid relative to the server's
+    // current state, so firing a second delete before the first round-trip
+    // completes would send a now-stale number and 404, or race the renumbering.
+    const [versionMutationPending, setVersionMutationPending] = useState(false);
+    const {
+        sidebarOpen,
+        setSidebarOpen,
+        projectId,
+        projectName,
+        renameProject,
+        lastSavedAt,
+        hydrateFromSave,
+        setDraggedPaletteType,
+    } = useCanvasStore();
+
+    const refreshVersions = () => {
+        if (!projectId) return;
+        fetch(`/api/projects/${projectId}/versions`)
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => setVersions(data?.versions ?? []))
+            .catch(() => {});
     };
 
-    const sidebarWidth = sidebarOpen ? 260 : 48;
+    useEffect(() => {
+        refreshVersions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [projectId, lastSavedAt]);
+
+    const handleNameSave = () => {
+        setEditingName(false);
+        const trimmed = nameInput.trim();
+        if (trimmed && trimmed !== projectName) renameProject(trimmed);
+    };
+
+    const handleRestore = async (versionNumber: number) => {
+        if (!projectId) return;
+        setBusyVersion(versionNumber);
+        try {
+            const res = await fetch(`/api/projects/${projectId}/restore/${versionNumber}`);
+            if (!res.ok) return;
+            const graph = await res.json();
+            hydrateFromSave(graph.nodes ?? [], graph.edges ?? [], true);
+        } finally {
+            setBusyVersion(null);
+        }
+    };
+
+    const handleDelete = async (versionNumber: number) => {
+        if (!projectId || versionMutationPending) return;
+        setVersionMutationPending(true);
+
+        // Optimistically remove the row and renumber the rest immediately —
+        // don't make the user wait on the round-trip to see it disappear.
+        const previousVersions = versions;
+        setVersions((prev) =>
+            prev
+                .filter((v) => v.versionNumber !== versionNumber)
+                .map((v) => (v.versionNumber > versionNumber ? { ...v, versionNumber: v.versionNumber - 1 } : v)),
+        );
+        setConfirmDeleteVersion(null);
+
+        try {
+            const res = await fetch(`/api/projects/${projectId}/versions/${versionNumber}`, { method: "DELETE" });
+            if (!res.ok) setVersions(previousVersions);
+        } catch {
+            setVersions(previousVersions);
+        } finally {
+            setVersionMutationPending(false);
+        }
+    };
+
+    // Custom pointer-driven drag (not native HTML5 DnD — that always shows an
+    // OS-level cursor decoration on Windows that no web API can suppress).
+    // The rest of the gesture (cursor-following pill, drop detection, node
+    // creation) is handled centrally in CanvasPage.tsx, which sits inside the
+    // ReactFlowProvider and owns the canvas viewport bounds.
+    //
+    // A plain click is a mousedown immediately followed by mouseup — we don't
+    // want that to start a drag (and show the pill). Only commit to "this is
+    // a drag" once the cursor has actually moved past a small threshold.
+    const DRAG_THRESHOLD_PX = 4;
+
+    const handlePointerDown = (e: React.MouseEvent, type: NodeType) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startY = e.clientY;
+
+        const handleMouseMove = (moveEvent: MouseEvent) => {
+            const dx = moveEvent.clientX - startX;
+            const dy = moveEvent.clientY - startY;
+            if (Math.hypot(dx, dy) >= DRAG_THRESHOLD_PX) {
+                setDraggedPaletteType(type);
+                cleanup();
+            }
+        };
+
+        const handleMouseUp = () => cleanup();
+
+        function cleanup() {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        }
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+    };
+
+    const sidebarWidth = sidebarOpen ? 304 : 48;
 
     return (
         <div
@@ -103,16 +216,15 @@ export default function LeftSidebar() {
                     {(Object.entries(NODE_TYPES_CONFIG) as [NodeType, typeof NODE_TYPES_CONFIG[NodeType]][]).map(([type, config]) => (
                         <div
                             key={type}
-                            draggable
-                            onDragStart={e => handleDragStart(e, type)}
+                            onMouseDown={e => handlePointerDown(e, type)}
                             title={config.label}
                             style={{
                                 width: 34, height: 34, borderRadius: 0, margin: "6px auto",
-                                border: `2px solid #2c336c`,
+                                border: "2px solid #2c336c",
                                 background: `#ddb9ac`,
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 color: config.color, cursor: "grab", transition: "all 150ms",
-                                boxShadow: "2px 2px 0px 0px #2c336c"
+                                boxShadow: "2px 2px 0px 0px #2c336c", userSelect: "none",
                             }}
                             onMouseEnter={e => {
                                 const el = e.currentTarget;
@@ -172,13 +284,12 @@ export default function LeftSidebar() {
                                 {(Object.entries(NODE_TYPES_CONFIG) as [NodeType, typeof NODE_TYPES_CONFIG[NodeType]][]).map(([type, config]) => (
                                     <div
                                         key={type}
-                                        draggable
-                                        onDragStart={e => handleDragStart(e, type)}
+                                        onMouseDown={e => handlePointerDown(e, type)}
                                         title={config.label}
                                         style={{
                                             height: 32,
                                             borderRadius: 6,
-                                            border: `1.5px solid #2c336c`,
+                                            border: "1.5px solid #2c336c",
                                             background: `#f3f3f2`,
                                             boxShadow: "2px 2px 0px 0px #2c336c",
                                             display: "flex", alignItems: "center", gap: 6,
@@ -216,11 +327,11 @@ export default function LeftSidebar() {
 
                     {/* Divider element removed initially, relying on border bottom of palette container */}
 
-                    {/* LAYERS section */}
+                    {/* PROJECT section */}
                     <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
                         {/* Section header */}
                         <div
-                            onClick={() => setLayersOpen(o => !o)}
+                            onClick={() => setProjectOpen(o => !o)}
                             style={{
                                 height: 40, padding: "0 14px",
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -232,78 +343,204 @@ export default function LeftSidebar() {
                             onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#c78caf"}
                             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#ddb9ac"}
                         >
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#2c336c" }}>
-                                    Layers
-                                </span>
-                                {nodes.length > 0 && (
-                                    <span style={{
-                                        fontSize: 11, fontWeight: 700, background: "#3d4270",
-                                        border: "2px solid #4a5090",
-                                        color: "#c8cbe8", borderRadius: 0, padding: "2px 6px",
-                                    }}>{nodes.length}</span>
-                                )}
-                            </div>
+                            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#2c336c" }}>
+                                Project
+                            </span>
                             <span style={{ color: "#2c336c" }}>
-                                <ChevronIcon open={layersOpen} />
+                                <ChevronIcon open={projectOpen} />
                             </span>
                         </div>
 
-                        {layersOpen && (
-                            <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "10px 0 8px" }}>
-                                {nodes.length === 0 && (
-                                    <div style={{ padding: "12px 16px", fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 700, textAlign: "center" }}>
-                                        No nodes yet
-                                    </div>
-                                )}
-                                {nodes.map(node => {
-                                    const rawType = node.data.type as string;
-                                    const isUnknown = !(rawType in NODE_TYPES_CONFIG);
-                                    const config = isUnknown ? null : NODE_TYPES_CONFIG[rawType as NodeType];
-                                    const isSelected = node.id === selectedNodeId;
-                                    return (
-                                        <div
-                                            key={node.id}
-                                            onClick={() => selectNode(isSelected ? null : node.id)}
+                        {projectOpen && (
+                            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+                                <div style={{ padding: "10px 10px 0" }}>
+                                    {/* Name card */}
+                                    {editingName ? (
+                                        <input
+                                            autoFocus
+                                            value={nameInput}
+                                            onChange={(e) => setNameInput(e.target.value)}
+                                            onBlur={handleNameSave}
+                                            onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
                                             style={{
-                                                height: 38, padding: "0 12px",
-                                                display: "flex", alignItems: "center", gap: 8,
-                                                margin: "0 10px 8px", borderRadius: 0,
-                                                border: "2px solid #2c336c",
-                                                boxShadow: isSelected ? "4px 4px 0px 0px #2c336c" : "2px 2px 0px 0px #2c336c",
-                                                cursor: "pointer", fontSize: 13, fontWeight: 700,
-                                                color: "#2c336c",
-                                                background: isSelected ? "#c78caf" : "#f3f3f2",
+                                                width: "100%", fontSize: 13, fontWeight: 800, color: "#2c336c",
+                                                background: "#ffffff", border: "2px solid #2c336c",
+                                                boxShadow: "2px 2px 0px 0px #2c336c", outline: "none",
+                                                padding: "8px 10px", boxSizing: "border-box",
+                                            }}
+                                        />
+                                    ) : (
+                                        <div
+                                            onClick={() => { setNameInput(projectName); setEditingName(true); }}
+                                            style={{
+                                                display: "flex", alignItems: "center", justifyContent: "space-between",
+                                                border: "1.5px solid #2c336c", boxShadow: "2px 2px 0px 0px #2c336c",
+                                                background: "#f3f3f2", padding: "8px 10px", cursor: "pointer",
                                                 transition: "all 150ms",
-                                                transform: isSelected ? "translate(-2px, -2px)" : "translate(0, 0)",
                                             }}
                                             onMouseEnter={e => {
-                                                if (!isSelected) {
-                                                    (e.currentTarget as HTMLElement).style.background = "#ddb9ac";
-                                                    (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
-                                                    (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
-                                                }
+                                                const el = e.currentTarget;
+                                                el.style.transform = "translate(-2px, -2px)";
+                                                el.style.boxShadow = "4px 4px 0px 0px #2c336c";
+                                                el.style.background = "#ddb9ac";
                                             }}
                                             onMouseLeave={e => {
-                                                if (!isSelected) {
-                                                    (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
-                                                    (e.currentTarget as HTMLElement).style.transform = "translate(0px, 0px)";
-                                                    (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
-                                                }
+                                                const el = e.currentTarget;
+                                                el.style.transform = "translate(0px, 0px)";
+                                                el.style.boxShadow = "2px 2px 0px 0px #2c336c";
+                                                el.style.background = "#f3f3f2";
                                             }}
                                         >
-                                            <div style={{ width: 8, height: 8, borderRadius: 0, border: "2px solid #4a5090", background: config?.color || "#52525B", flexShrink: 0 }} />
-                                            <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                                {String(node.data.label || node.id)}
+                                            <span style={{ fontSize: 13, fontWeight: 800, color: "#2c336c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                {projectName}
                                             </span>
-                                            {isSelected && (
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6c73b8" strokeWidth="3">
-                                                    <polyline points="20 6 9 17 4 12" />
-                                                </svg>
-                                            )}
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2c336c" strokeWidth="2.5" style={{ flexShrink: 0, opacity: 0.55, marginLeft: 6 }}>
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
                                         </div>
-                                    );
-                                })}
+                                    )}
+
+                                    {/* Last saved + version count stat strip */}
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+                                        <div style={{ border: "1.5px solid #2c336c", boxShadow: "2px 2px 0px 0px #2c336c", background: "#f3f3f2", padding: "6px 8px" }}>
+                                            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(44,51,108,0.55)" }}>
+                                                Last saved
+                                            </div>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: "#2c336c", marginTop: 2 }}>
+                                                {timeAgo(lastSavedAt)}
+                                            </div>
+                                        </div>
+                                        <div style={{ border: "1.5px solid #2c336c", boxShadow: "2px 2px 0px 0px #2c336c", background: "#f3f3f2", padding: "6px 8px" }}>
+                                            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(44,51,108,0.55)" }}>
+                                                Versions
+                                            </div>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: "#2c336c", marginTop: 2 }}>
+                                                {versions.length}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(0,0,0,0.4)", margin: "12px 0 6px" }}>
+                                        History
+                                    </div>
+                                </div>
+
+                                {/* Version list — one bordered card containing compact rows.
+                                    Fixed height for 4 rows; scrolls internally beyond that. */}
+                                <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "0 10px 10px" }}>
+                                    <div
+                                        style={{
+                                            border: "1.5px solid #2c336c",
+                                            boxShadow: "2px 2px 0px 0px #2c336c",
+                                            background: "#f3f3f2",
+                                            padding: "2px 10px",
+                                            maxHeight: 34 * 4,
+                                            overflowY: "auto",
+                                        }}
+                                    >
+                                    {versions.length === 0 && (
+                                        <div style={{ padding: "10px 4px", fontSize: 12, color: "rgba(44,51,108,0.6)", fontWeight: 600 }}>
+                                            No saved versions yet
+                                        </div>
+                                    )}
+                                    {versions.map((v, i) => {
+                                        const isConfirming = confirmDeleteVersion === v.versionNumber;
+                                        const isBusy = busyVersion === v.versionNumber;
+                                        return (
+                                            <div
+                                                key={v.id}
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "space-between",
+                                                    gap: 6,
+                                                    height: 34,
+                                                    padding: "0 2px",
+                                                    borderBottom: i === versions.length - 1 ? "none" : "1px solid rgba(44,51,108,0.15)",
+                                                }}
+                                            >
+                                                <div style={{ minWidth: 0, overflow: "hidden" }}>
+                                                    <span style={{ fontSize: 12, fontWeight: 800, color: "#2c336c" }}>
+                                                        Version {v.versionNumber}
+                                                    </span>
+                                                    <span style={{ fontSize: 10, color: "rgba(44,51,108,0.55)", fontWeight: 600, marginLeft: 6 }}>
+                                                        {new Date(v.createdAt).toLocaleString(undefined, {
+                                                            month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                                                    {isConfirming ? (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleDelete(v.versionNumber)}
+                                                                disabled={versionMutationPending}
+                                                                style={{
+                                                                    height: 22, padding: "0 6px", fontSize: 10, fontWeight: 800,
+                                                                    border: "2px solid #2c336c", background: "#e0707a",
+                                                                    color: "#2c336c", cursor: versionMutationPending ? "default" : "pointer",
+                                                                    opacity: versionMutationPending ? 0.6 : 1,
+                                                                }}
+                                                            >
+                                                                {versionMutationPending ? "..." : "Confirm"}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setConfirmDeleteVersion(null)}
+                                                                disabled={versionMutationPending}
+                                                                style={{
+                                                                    height: 22, padding: "0 6px", fontSize: 10, fontWeight: 800,
+                                                                    border: "2px solid #2c336c", background: "#ffffff",
+                                                                    color: "#2c336c", cursor: versionMutationPending ? "default" : "pointer",
+                                                                    opacity: versionMutationPending ? 0.6 : 1,
+                                                                }}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleRestore(v.versionNumber)}
+                                                                disabled={isBusy || versionMutationPending}
+                                                                title="Restore onto canvas"
+                                                                style={{
+                                                                    width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center",
+                                                                    border: "2px solid #2c336c", background: "#c78caf",
+                                                                    color: "#2c336c", cursor: isBusy || versionMutationPending ? "default" : "pointer", flexShrink: 0,
+                                                                    opacity: versionMutationPending && !isBusy ? 0.6 : 1,
+                                                                }}
+                                                            >
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                    <polyline points="1 4 1 10 7 10" />
+                                                                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                                                                </svg>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setConfirmDeleteVersion(v.versionNumber)}
+                                                                disabled={versionMutationPending}
+                                                                title="Delete version"
+                                                                style={{
+                                                                    width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center",
+                                                                    border: "2px solid #2c336c", background: "#ffffff",
+                                                                    color: "#2c336c", cursor: versionMutationPending ? "default" : "pointer", flexShrink: 0,
+                                                                    opacity: versionMutationPending ? 0.6 : 1,
+                                                                }}
+                                                            >
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                    <polyline points="3 6 5 6 21 6" />
+                                                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                                    <path d="M10 11v6M14 11v6" />
+                                                                </svg>
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>

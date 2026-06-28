@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Node, Edge } from "@xyflow/react";
-import { SAMPLE_NODES, SAMPLE_EDGES } from "@/lib/constants/canvasConstants";
+import { SAMPLE_NODES, SAMPLE_EDGES, type NodeType } from "@/lib/constants/canvasConstants";
 import { transformGraph, type RawGraph } from "@/lib/graph/graphTransform";
 
 type SaveStatus = "idle" | "saving" | "saved";
@@ -24,6 +24,10 @@ interface CanvasState {
     edges: Edge[];
     selectedNodeId: string | null;
     selectedNodeIds: string[];
+    // Which single node (if any) currently shows its floating NodeToolbar —
+    // distinct from selection: single click selects, double click reveals
+    // the toolbar, triple click additionally opens the right panel.
+    toolbarOpenNodeId: string | null;
     rightPanelOpen: boolean;
     sidebarOpen: boolean;
     activeMode: ActiveMode;
@@ -34,6 +38,8 @@ interface CanvasState {
     generatingMessage: string;
     contextMenu: ContextMenu | null;
     projectName: string;
+    projectId: string | null;
+    lastSavedAt: Date | null;
     hasUnsavedChanges: boolean;
     fitViewTrigger: number;
     edgeStyle: "solid" | "dashed";
@@ -42,7 +48,11 @@ interface CanvasState {
     nodeColor: string;
     selectedEdgeIds: string[];
     interactionMode: "select" | "drawEdge";
-    
+    // Custom pointer-driven palette drag (not native HTML5 DnD — that drags in
+    // an OS-level cursor decoration on Windows we can't suppress). Set on
+    // mousedown over a sidebar card, cleared on mouseup wherever it lands.
+    draggedPaletteType: NodeType | null;
+
     // History
     history: HistoryState;
     pushHistory: () => void;
@@ -70,10 +80,15 @@ interface CanvasState {
     setSelectedNodeIds: (ids: string[]) => void;
     setSelectedEdges: (ids: string[]) => void;
     setInteractionMode: (mode: "select" | "drawEdge") => void;
+    setDraggedPaletteType: (type: NodeType | null) => void;
     updateEdgeData: (edgeId: string, data: any) => void;
-    triggerSave: () => void;
+    triggerSave: () => Promise<boolean>;
     loadGraph: (raw: RawGraph, direction?: "TB" | "LR") => void;
     generateSampleNodes: () => void;
+    setProjectId: (id: string | null) => void;
+    hydrateFromSave: (nodes: Node[], edges: Edge[], markUnsaved?: boolean) => void;
+    hydrateProjectMeta: (title: string) => void;
+    renameProject: (title: string) => Promise<boolean>;
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
@@ -81,6 +96,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     edges: [],
     selectedNodeId: null,
     selectedNodeIds: [],
+    toolbarOpenNodeId: null,
     rightPanelOpen: false,
     sidebarOpen: true,
     activeMode: "design",
@@ -90,7 +106,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     isGenerating: false,
     generatingMessage: "",
     contextMenu: null,
-    projectName: "Doctor Booking App",
+    projectName: "Untitled Project",
+    projectId: null,
+    lastSavedAt: null,
     hasUnsavedChanges: false,
     fitViewTrigger: 0,
     edgeStyle: "solid",
@@ -99,6 +117,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     nodeColor: "#ffffff",
     selectedEdgeIds: [],
     interactionMode: "select",
+    draggedPaletteType: null,
     history: { past: [], future: [] },
 
     pushHistory: () =>
@@ -163,6 +182,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         }),
 
     setInteractionMode: (mode) => set({ interactionMode: mode }),
+
+    setDraggedPaletteType: (type) => set({ draggedPaletteType: type }),
 
     setNodes: (nodes) =>
         set((state) => {
@@ -260,12 +281,57 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         hasUnsavedChanges: true,
     })),
 
-    triggerSave: () => {
+    setProjectId: (id) => set({ projectId: id }),
+
+    hydrateProjectMeta: (title) => set({ projectName: title }),
+
+    renameProject: async (title) => {
+        const { projectId } = get();
+        if (!projectId) return false;
+        try {
+            const res = await fetch(`/api/projects/${projectId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title }),
+            });
+            if (!res.ok) return false;
+            set({ projectName: title });
+            return true;
+        } catch {
+            return false;
+        }
+    },
+
+    hydrateFromSave: (nodes, edges, markUnsaved = false) => {
+        set({
+            nodes,
+            edges,
+            selectedNodeId: null,
+            rightPanelOpen: false,
+            hasUnsavedChanges: markUnsaved,
+        });
+        setTimeout(() => set(s => ({ fitViewTrigger: s.fitViewTrigger + 1 })), 100);
+    },
+
+    triggerSave: async () => {
+        const { projectId, nodes, edges } = get();
+        if (!projectId) return false;
+
         set({ saveStatus: "saving", hasUnsavedChanges: false });
-        setTimeout(() => {
-            set({ saveStatus: "saved" });
+        try {
+            const res = await fetch(`/api/projects/${projectId}/save`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nodes, edges }),
+            });
+            if (!res.ok) throw new Error("Save failed");
+            set({ saveStatus: "saved", lastSavedAt: new Date() });
             setTimeout(() => set({ saveStatus: "idle" }), 2000);
-        }, 800);
+            return true;
+        } catch {
+            set({ saveStatus: "idle", hasUnsavedChanges: true });
+            return false;
+        }
     },
 
     loadGraph: (raw, direction = "TB") => {
@@ -279,7 +345,6 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         });
         // Trigger fitView after React Flow processes the new nodes
         setTimeout(() => set(s => ({ fitViewTrigger: s.fitViewTrigger + 1 })), 100);
-        get().triggerSave();
     },
 
     generateSampleNodes: () => {
@@ -292,7 +357,6 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         });
         setTimeout(() => {
             set({ edges: SAMPLE_EDGES as Edge[] });
-            get().triggerSave();
             // Trigger auto-fit after all nodes + edges are placed
             setTimeout(() => set(s => ({ fitViewTrigger: s.fitViewTrigger + 1 })), 150);
         }, SAMPLE_NODES.length * 150 + 200);
