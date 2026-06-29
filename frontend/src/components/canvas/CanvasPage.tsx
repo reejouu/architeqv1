@@ -113,20 +113,15 @@ export default function CanvasPage() {
                 if (cancelled || !data?.project) return;
                 setProjectId(data.project.id);
                 hydrateProjectMeta(data.project.title);
-                return fetch(`/api/projects/${data.project.id}/load`).then((res) => (res.ok ? res.json() : null));
-            })
-            .then((graph) => {
-                if (cancelled || !graph) return;
-                if (graph.nodes?.length > 0) {
-                    hydrateFromSave(graph.nodes, graph.edges ?? []);
-                }
+                // Intentionally skipping auto-hydration of graph per user request;
+                // graph will be empty until user explicitly restores a version.
             })
             .catch(() => {});
 
         return () => {
             cancelled = true;
         };
-    }, [setProjectId, hydrateFromSave, hydrateProjectMeta]);
+    }, [setProjectId, hydrateProjectMeta]);
 
     return (
         <div

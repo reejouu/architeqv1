@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useCanvasStore } from "@/store/canvasStore";
 
 export default function UserMenu() {
     const router = useRouter();
@@ -23,6 +24,10 @@ export default function UserMenu() {
     const initial = user.name?.charAt(0).toUpperCase() || "?";
 
     async function handleLogout() {
+        // Leave the live room immediately — otherwise this user's avatar
+        // and cursor linger for everyone else still in the room until the
+        // websocket eventually times out on its own.
+        useCanvasStore.getState().liveblocks.leaveRoom();
         await fetch("/api/auth/logout", { method: "POST" });
         await refetch();
         router.push("/");

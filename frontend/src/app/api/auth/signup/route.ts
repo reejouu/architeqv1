@@ -16,6 +16,12 @@ export async function POST(request: Request) {
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
+        if (!existing.passwordHash) {
+            return NextResponse.json(
+                { error: "This email is registered via Google. Continue with Google instead." },
+                { status: 409 },
+            );
+        }
         return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
     }
 

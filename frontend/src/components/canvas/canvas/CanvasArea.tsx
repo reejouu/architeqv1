@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
   Background,
@@ -251,9 +251,11 @@ export default function CanvasArea() {
     setEdges(storeEdges);
   }, [storeEdges, setEdges]);
 
+  const prevFitViewTrigger = useRef(fitViewTrigger);
   // Auto-fit view whenever generation completes
   useEffect(() => {
-    if (fitViewTrigger === 0) return;
+    if (fitViewTrigger === 0 || fitViewTrigger === prevFitViewTrigger.current) return;
+    prevFitViewTrigger.current = fitViewTrigger;
     fitView({ padding: 0.4, duration: 600 });
   }, [fitViewTrigger, fitView]);
 
