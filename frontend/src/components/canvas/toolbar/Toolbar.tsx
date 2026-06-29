@@ -118,7 +118,6 @@ export default function Toolbar() {
     isInRoom,
     isHost,
     others,
-    connectionStatus,
     startRoom,
     joinRoom,
     leaveRoom,
@@ -797,21 +796,6 @@ export default function Toolbar() {
                 </div>
               )}
             </div>
-          )}
-
-          {/* Connection status dot */}
-          {isInRoom && (
-            <div
-              title={`Status: ${connectionStatus}`}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: connectionStatus === "connected" ? "#10B981" : connectionStatus === "connecting" || connectionStatus === "reconnecting" ? "#FBBF24" : "#EF4444",
-                border: "1px solid rgba(0,0,0,0.2)",
-                flexShrink: 0,
-              }}
-            />
           )}
 
           {!isInRoom ? (
