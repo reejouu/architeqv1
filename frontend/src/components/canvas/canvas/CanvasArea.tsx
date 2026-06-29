@@ -294,6 +294,12 @@ export default function CanvasArea() {
     }, 0);
   }, [storeSetEdges, getEdges]);
 
+  // Tracks repeated clicks on the same node while in arrow (drawEdge) mode —
+  // clicking a node there doesn't open the edit toolbar, which is confusing,
+  // so after a couple of clicks we nudge the user toward pointer mode.
+  const arrowModeClickRef = useRef<{ id: string; count: number } | null>(null);
+  const arrowModeHintTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const onNodeClick = useCallback((e: React.MouseEvent, node: Node) => {
     // Ctrl/Cmd+click for multi-select
     const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
@@ -309,6 +315,21 @@ export default function CanvasArea() {
         toolbarOpenNodeId: null,
       });
       return;
+    }
+
+    if (useCanvasStore.getState().interactionMode === "drawEdge") {
+      const prev = arrowModeClickRef.current;
+      const count = prev && prev.id === node.id ? prev.count + 1 : 1;
+      arrowModeClickRef.current = { id: node.id, count };
+      if (count >= 2) {
+        if (arrowModeHintTimeoutRef.current) clearTimeout(arrowModeHintTimeoutRef.current);
+        useCanvasStore.setState({ arrowModeHint: true });
+        arrowModeHintTimeoutRef.current = setTimeout(() => {
+          useCanvasStore.setState({ arrowModeHint: false });
+        }, 2500);
+      }
+    } else {
+      arrowModeClickRef.current = null;
     }
 
     // Single click selects and shows the floating toolbar.
@@ -499,6 +520,7 @@ export default function CanvasArea() {
 
       {/* Live collaboration cursors */}
       <LiveCursors viewportOffset={{ top: 64, left: sidebarOpen ? 304 : 48 }} />
+
     </div>
   );
 }

@@ -51,6 +51,9 @@ interface CanvasState {
     nodeColor: string;
     selectedEdgeIds: string[];
     interactionMode: "select" | "drawEdge";
+    // Transient nudge shown when the user repeatedly clicks a node while in
+    // arrow mode, where clicks don't open the edit toolbar.
+    arrowModeHint: boolean;
     // Custom pointer-driven palette drag (not native HTML5 DnD — that drags in
     // an OS-level cursor decoration on Windows we can't suppress). Set on
     // mousedown over a sidebar card, cleared on mouseup wherever it lands.
@@ -126,6 +129,7 @@ export const useCanvasStore = create<WithLiveblocks<CanvasState>>()(
     nodeColor: "#ffffff",
     selectedEdgeIds: [],
     interactionMode: "select",
+    arrowModeHint: false,
     draggedPaletteType: null,
     cursor: null,
     history: { past: [], future: [] },

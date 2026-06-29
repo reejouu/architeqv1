@@ -117,6 +117,7 @@ export default function Toolbar() {
     edges,
     interactionMode,
     setInteractionMode,
+    arrowModeHint,
   } = useCanvasStore();
 
   const {
@@ -358,19 +359,63 @@ export default function Toolbar() {
           }}
         >
           {/* Select Tool */}
-          <ToolButton
-            title="Select (V)"
-            active={interactionMode === "select"}
-            onClick={() => {
-              setInteractionMode("select");
-              setArrowMenuOpen(false);
-              setFontFamilyMenuOpen(false);
-            }}
-          >
-            <div style={{ width: 18, height: 18, fill: "none" }}>
-              <SelectIcon />
-            </div>
-          </ToolButton>
+          <div style={{ position: "relative" }}>
+            <ToolButton
+              title="Select (V)"
+              active={interactionMode === "select"}
+              onClick={() => {
+                setInteractionMode("select");
+                setArrowMenuOpen(false);
+                setFontFamilyMenuOpen(false);
+              }}
+            >
+              <div style={{ width: 18, height: 18, fill: "none" }}>
+                <SelectIcon />
+              </div>
+            </ToolButton>
+
+            {/* Nudge shown after repeatedly clicking a node while in arrow mode */}
+            {arrowModeHint && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  marginTop: 10,
+                  zIndex: 1000,
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -6,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 0,
+                    height: 0,
+                    borderLeft: "6px solid transparent",
+                    borderRight: "6px solid transparent",
+                    borderBottom: "6px solid var(--green)",
+                  }}
+                />
+                <div
+                  style={{
+                    background: "var(--green)",
+                    color: "#ffffff",
+                    borderRadius: 6,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+                    padding: "8px 12px",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Switch to pointer mode to edit nodes
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Edge Toggle / Dropdown */}
           <div ref={arrowRef} style={{ position: "relative" }}>
@@ -701,6 +746,20 @@ export default function Toolbar() {
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
             {isInRoom ? "In Room" : "Collaborate"}
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              style={{
+                transform: collabMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 200ms ease",
+              }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </button>
 
           {/* Dropdown for an active room — code + leave */}
