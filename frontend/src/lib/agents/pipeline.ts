@@ -1,10 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
-import { agent1 } from "./agent1";
-import { agent2 } from "./agent2";
-import { agent3 } from "./agent3";
-import { agent4 } from "./agent4";
+import { agentBlueprint } from "./agentBlueprint";
+import { agentRefine } from "./agentRefine";
 import type { FinalGraph, Module } from "@/types/agents";
 
 // ─── Fix 1: Reassign columns sequentially per layer ───────────
@@ -84,27 +82,29 @@ export async function runPipeline(idea: string, onProgress?: (msg: string) => vo
     console.log("═══════════════════════════════════════════════");
     console.log(`\n💡 Idea: "${idea}"\n`);
 
-    if (onProgress) onProgress("Drafting initial module architecture...");
-    const a1 = await agent1(idea);
+    // ─── Call A: modules + dependencies (was agent1 + agent2) ──
+    // Date.now() deltas (not console.time) so timings stay accurate per-request
+    // even if a call throws — a shared console.time label would leak across requests.
+    if (onProgress) onProgress("Designing modules & dependencies...");
+    const tBlueprint = Date.now();
+    const blueprint = await agentBlueprint(idea);
+    console.log(`⏱  blueprint: ${((Date.now() - tBlueprint) / 1000).toFixed(2)}s`);
 
-    if (onProgress) onProgress("Mapping system dependencies...");
-    const a2 = await agent2(a1);
-
-    if (onProgress) onProgress("Evaluating risks & architectural additions...");
-    const a3 = await agent3(a1, a2);
-
-    if (onProgress) onProgress("Assigning ownership & development priorities...");
-    const a4 = await agent4(a1, a3);
+    // ─── Call B: gaps/risks + ownership/priority (was agent3 + agent4) ──
+    if (onProgress) onProgress("Completing skeleton & allocating work...");
+    const tRefine = Date.now();
+    const refine = await agentRefine(blueprint);
+    console.log(`⏱  refine: ${((Date.now() - tRefine) / 1000).toFixed(2)}s`);
 
     // ─── Post-processing ──────────────────────────────────────
     if (onProgress) onProgress("Finalizing graph layout...");
 
-    // Step 1: Fix agent3 additions that landed on wrong layer
-    const correctedAdditions = fixAdditionLayers(a3.additions, a1.modules);
+    // Step 1: Fix additions that landed on wrong layer
+    const correctedAdditions = fixAdditionLayers(refine.additions, blueprint.modules);
 
     // Step 2: Merge nodes and remove duplicates
     const mergedNodes = deduplicateNodes([
-        ...a1.modules,
+        ...blueprint.modules,
         ...correctedAdditions,
     ]);
 
@@ -113,7 +113,7 @@ export async function runPipeline(idea: string, onProgress?: (msg: string) => vo
 
     // Step 4: Merge edges and remove any that reference trimmed/missing nodes
     const mergedEdges = cleanOrphanEdges(
-        [...a2.dependencies, ...a3.extra_dependencies],
+        [...blueprint.dependencies, ...refine.extra_dependencies],
         layoutNodes
     );
 
@@ -130,10 +130,10 @@ export async function runPipeline(idea: string, onProgress?: (msg: string) => vo
         idea,
         nodes: layoutNodes,
         edges: mergedEdges,
-        risks: a3.risks,
-        ownership: a4.assignments,
-        groups: a4.groups,
-        priority: a4.priority,
+        risks: refine.risks,
+        ownership: refine.assignments,
+        groups: refine.groups,
+        priority: refine.priority,
     };
 
     console.log("═══════════════════════════════════════════════");

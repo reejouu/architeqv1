@@ -62,6 +62,13 @@ export interface Agent4Output {
   priority: Record<string, number>;
 }
 
+// ─── Merged 2-call pipeline outputs ──────────────────────────
+// Call A (Blueprint) = modules + dependencies in one pass.
+export type BlueprintOutput = Agent1Output & Agent2Output;
+
+// Call B (Refine) = gap/risk additions + ownership/priority in one pass.
+export type RefineOutput = Agent3Output & Agent4Output;
+
 // ─── Final Graph (React Flow ready) ──────────────────────────
 
 export interface FinalGraph {
