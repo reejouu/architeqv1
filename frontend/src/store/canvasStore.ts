@@ -90,7 +90,7 @@ interface CanvasState {
     setDraggedPaletteType: (type: NodeType | null) => void;
     updateEdgeData: (edgeId: string, data: any) => void;
     triggerSave: () => Promise<boolean>;
-    loadGraph: (raw: RawGraph, direction?: "TB" | "LR") => void;
+    loadGraph: (raw: RawGraph, direction?: "TB" | "LR") => Promise<void>;
     generateSampleNodes: () => void;
     setProjectId: (id: string | null) => void;
     hydrateFromSave: (nodes: Node[], edges: Edge[], markUnsaved?: boolean) => void;
@@ -345,8 +345,8 @@ export const useCanvasStore = create<WithLiveblocks<CanvasState>>()(
         }
     },
 
-    loadGraph: (raw, direction = "TB") => {
-        const { nodes, edges } = transformGraph(raw, direction);
+    loadGraph: async (raw, direction = "TB") => {
+        const { nodes, edges } = await transformGraph(raw, direction);
         set({
             nodes,
             edges,
