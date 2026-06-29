@@ -8,7 +8,7 @@ import { Type, type Schema } from "@google/genai";
 
 export const blueprintSystemPrompt = `You are a product-focused system architect.
 
-Produce a COMPREHENSIVE yet clean architecture for the product idea: the set of
+Produce a clean architecture for the product idea: the set of
 modules a real working version would have, plus the dependencies that explain how
 data and users flow through it. The result is a skeletal framework a developer can
 either build from directly or adapt — so be thorough within the bounds, not minimal.

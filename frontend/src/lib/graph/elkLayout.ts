@@ -137,6 +137,11 @@ export async function computeElkLayout(
             const midY = Math.round((S.y + T.y) / 2);
             pts = [S, { x: S.x, y: midY }, { x: T.x, y: midY }, T];
         }
+        // offset of each endpoint from its node's CENTER — lets ArchEdge anchor to the
+        // live React Flow handle (node center) + offset, so arrows always land on the
+        // real node even if absolute coords drift.
+        const sCenter = (posById.get(r.src)?.x ?? 0) + W / 2;
+        const tCenter = (posById.get(r.tgt)?.x ?? 0) + W / 2;
         return {
             id: r.e.id as string,
             source: r.src,
@@ -146,6 +151,8 @@ export async function computeElkLayout(
                 points: pts,
                 exitPoint: S,
                 entryPoint: T,
+                exitOffset: { dx: S.x - sCenter, dy: 0 },
+                entryOffset: { dx: T.x - tCenter, dy: 0 },
                 exitPort: "bottom",
                 entryPort: "top",
                 waypoints: [],

@@ -50,7 +50,19 @@ export default function ArchEdge({
   //        ELK points share the canvas/flow coordinate space, so they render directly.
   const elkPoints = data?.points as { x: number; y: number }[] | undefined;
   if (elkPoints && elkPoints.length >= 2) {
-    const path = buildOrthogonalPath(elkPoints, 8);
+    // Anchor the endpoints to React Flow's LIVE handle positions (which always track
+    // the actual rendered node) plus the per-edge offset, so arrows can never land in
+    // blank space even if the precomputed absolute coords drift. ELK's interior bends
+    // (re-aligned to the anchored x) still shape the route.
+    const sx = sourceX + (exitOffset?.dx ?? 0);
+    const tx = targetX + (entryOffset?.dx ?? 0);
+    const interior = elkPoints.slice(1, -1).map((p) => ({ ...p }));
+    if (interior.length) {
+      interior[0].x = sx;
+      interior[interior.length - 1].x = tx;
+    }
+    const anchored = [{ x: sx, y: sourceY }, ...interior, { x: tx, y: targetY }];
+    const path = buildOrthogonalPath(anchored, 8);
     return (
       <>
         <defs>
