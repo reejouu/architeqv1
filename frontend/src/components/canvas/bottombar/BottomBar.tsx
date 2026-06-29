@@ -22,29 +22,29 @@ const IconBtn = ({
       width: 32,
       height: 32,
       borderRadius: 0,
-      border: "2px solid rgba(255,255,255,0.25)",
-      background: active ? "#c78caf" : "rgba(255,255,255,0.1)",
-      color: active ? "#2c336c" : "#f3f3f2",
+      border: "2px solid var(--ink)",
+      background: active ? "var(--accent)" : "#ffffff",
+      color: "var(--ink)",
       cursor: "pointer",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       transition: "all 150ms",
-      boxShadow: "none",
+      boxShadow: "2px 2px 0px 0px var(--ink)",
     }}
     onMouseEnter={(e) => {
       if (!active)
         (e.currentTarget as HTMLElement).style.background =
-          "rgba(255,255,255,0.25)";
-      (e.currentTarget as HTMLElement).style.transform = "none";
-      (e.currentTarget as HTMLElement).style.boxShadow = "none";
+          "var(--accent)";
+      (e.currentTarget as HTMLElement).style.transform = "translate(-1px, -1px)";
+      (e.currentTarget as HTMLElement).style.boxShadow = "3px 3px 0px 0px var(--ink)";
     }}
     onMouseLeave={(e) => {
       (e.currentTarget as HTMLElement).style.background = active
-        ? "#c78caf"
-        : "rgba(255,255,255,0.1)";
+        ? "var(--accent)"
+        : "#ffffff";
       (e.currentTarget as HTMLElement).style.transform = "none";
-      (e.currentTarget as HTMLElement).style.boxShadow = "none";
+      (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px var(--ink)";
     }}
   >
     {children}
@@ -78,8 +78,8 @@ export default function BottomBar() {
         right: 0,
         height: 48,
         zIndex: 100,
-        background: "#636798",
-        borderTop: "3px solid #2c336c",
+        background: "var(--purple)",
+        borderTop: "2px solid var(--ink)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -104,7 +104,7 @@ export default function BottomBar() {
           style={{
             fontSize: 13,
             fontWeight: 800,
-            color: "#f3f3f2",
+            color: "var(--white)",
             minWidth: 44,
             textAlign: "center",
             cursor: "pointer",
@@ -145,7 +145,7 @@ export default function BottomBar() {
 
       {/* RIGHT — Node count + status */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#f3f3f2" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--white)" }}>
           {nodes.length} node{nodes.length !== 1 ? "s" : ""} · {edges.length}{" "}
           edge{edges.length !== 1 ? "s" : ""}
         </span>

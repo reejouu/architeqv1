@@ -14,48 +14,46 @@ export default function Navbar({ onLoginClick }: Props) {
 
     async function handleLogout() {
         await fetch("/api/auth/logout", { method: "POST" });
-        // router.refresh() only re-fetches Server Component data — it doesn't
-        // touch this component's own client-side state, so without this the
-        // navbar kept showing "logged in" even after the cookie was cleared.
         await refetch();
         router.push("/");
     }
 
     return (
-        <nav className="sticky top-0 h-20 bg-[#bf979e] border-b-[4px] border-borderBase z-50 flex items-center justify-between px-6 lg:px-20 transition-all">
-            <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-accentPurple border-[3px] border-[#2c336c] flex items-center justify-center shadow-[2px_2px_0px_#2c336c]">
-                    <div className="w-2.5 h-2.5 bg-[#2c336c] rounded-full"></div>
+        <nav className="sticky top-0 h-16 bg-[var(--stone)] border-b-[2px] border-[var(--ink)] z-50 px-12 transition-all">
+            <div className="max-w-[1140px] mx-auto h-full flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo/Architeq%20Logo.png" alt="Architeq" className="w-8 h-8 object-contain" />
+                    <span className="font-bold text-[var(--ink)] text-2xl uppercase tracking-wider">Architeq</span>
                 </div>
-                <span className="font-extrabold text-[#2c336c] text-xl uppercase tracking-wider">Architeq</span>
-            </div>
-            <div className="hidden md:flex items-center gap-8">
-                <a href="#" className="font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">Product</a>
-                <a href="#" className="font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">How it works</a>
-                <a href="#" className="font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">Use cases</a>
-                <a href="#" className="font-bold text-[#2c336c] hover:text-accentPurple transition-colors uppercase text-sm tracking-wider">Pricing</a>
-            </div>
-            <div className="flex items-center gap-4">
-                {status === "authenticated" && firstName && (
-                    <span className="hidden md:inline-flex items-center px-3 py-1 bg-[#ffe8a3] border-[3px] border-[#2c336c] shadow-[3px_3px_0px_#2c336c] text-xs font-bold uppercase tracking-wider text-[#2c336c] rounded-none">
-                        Hi, {firstName}
-                    </span>
-                )}
-                {status === "authenticated" ? (
-                    <button
-                        onClick={handleLogout}
-                        className="px-5 py-2 bg-[#f7d9e0] border-[3px] border-[#2c336c] shadow-[4px_4px_0px_#2c336c] text-xs md:text-sm font-extrabold uppercase tracking-widest text-[#2c336c] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#2c336c] transition-all rounded-none"
-                    >
-                        Log out
-                    </button>
-                ) : (
-                    <button
-                        onClick={onLoginClick}
-                        className="px-5 py-2 bg-accentPurple border-[3px] border-[#2c336c] shadow-[4px_4px_0px_#2c336c] text-xs md:text-sm font-extrabold uppercase tracking-widest text-[#2c336c] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#2c336c] transition-all rounded-none"
-                    >
-                        Log in / Sign up
-                    </button>
-                )}
+                <div className="hidden md:flex items-center gap-8">
+                    <a href="#" className="font-bold text-[var(--ink)] hover:underline hover:decoration-[2px] hover:underline-offset-4 transition-all uppercase text-[13px] tracking-[0.08em]">Product</a>
+                    <a href="#" className="font-bold text-[var(--ink)] hover:underline hover:decoration-[2px] hover:underline-offset-4 transition-all uppercase text-[13px] tracking-[0.08em]">How it works</a>
+                    <a href="#" className="font-bold text-[var(--ink)] hover:underline hover:decoration-[2px] hover:underline-offset-4 transition-all uppercase text-[13px] tracking-[0.08em]">Use cases</a>
+                    <a href="#" className="font-bold text-[var(--ink)] hover:underline hover:decoration-[2px] hover:underline-offset-4 transition-all uppercase text-[13px] tracking-[0.08em]">Pricing</a>
+                </div>
+                <div className="flex items-center gap-4">
+                    {status === "authenticated" && firstName && (
+                        <span className="hidden md:inline-flex items-center px-4 py-2 bg-[var(--green)] border-[2px] border-[var(--ink)] text-[11px] font-bold uppercase tracking-[0.12em] text-white shadow-[3px_3px_0px_var(--ink)]">
+                            Hi, {firstName}
+                        </span>
+                    )}
+                    {status === "authenticated" ? (
+                        <button
+                            onClick={handleLogout}
+                            className="bg-[var(--purple)] text-white border-[2px] border-[var(--ink)] shadow-[3px_3px_0px_var(--ink)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-[#586495] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[2px_2px_0px_var(--ink)] transition-all"
+                        >
+                            Log out
+                        </button>
+                    ) : (
+                        <button
+                            onClick={onLoginClick}
+                            className="bg-[var(--accent)] text-white border-[2px] border-[var(--ink)] shadow-[3px_3px_0px_var(--ink)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[2px_2px_0px_var(--ink)] transition-all"
+                        >
+                            Log in
+                        </button>
+                    )}
+                </div>
             </div>
         </nav>
     );

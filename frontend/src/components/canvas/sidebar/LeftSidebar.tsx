@@ -157,8 +157,8 @@ export default function LeftSidebar() {
                 bottom: 48,
                 width: sidebarWidth,
                 zIndex: 50,
-                background: "#bfb3ca",
-                borderRight: "3px solid #2c336c",
+                background: "var(--stone)",
+                borderRight: "2px solid var(--ink)",
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
@@ -172,11 +172,11 @@ export default function LeftSidebar() {
                 alignItems: "center",
                 justifyContent: sidebarOpen ? "space-between" : "center",
                 padding: sidebarOpen ? "0 14px 0 16px" : "0",
-                borderBottom: "3px solid #2c336c",
+                borderBottom: "2px solid var(--ink)",
                 flexShrink: 0,
             }}>
                 {sidebarOpen && (
-                    <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", color: "#2c336c", textTransform: "uppercase" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", color: "var(--ink)", textTransform: "uppercase" }}>
                         Components
                     </span>
                 )}
@@ -185,22 +185,22 @@ export default function LeftSidebar() {
                     title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                     style={{
                         width: 28, height: 28, borderRadius: 0,
-                        border: "2px solid #2c336c",
-                        background: "#ddb9ac",
+                        border: "2px solid var(--ink)",
+                        background: "#ffffff",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", color: "#2c336c", flexShrink: 0,
-                        boxShadow: "2px 2px 0px 0px #2c336c",
+                        cursor: "pointer", color: "var(--ink)", flexShrink: 0,
+                        boxShadow: "2px 2px 0px 0px var(--ink)",
                         transition: "all 150ms",
                     }}
                     onMouseEnter={e => {
-                        (e.currentTarget as HTMLElement).style.background = "#c78caf";
+                        (e.currentTarget as HTMLElement).style.background = "var(--stone)";
                         (e.currentTarget as HTMLElement).style.transform = "none";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px var(--ink)";
                     }}
                     onMouseLeave={e => {
-                        (e.currentTarget as HTMLElement).style.background = "#ddb9ac";
+                        (e.currentTarget as HTMLElement).style.background = "#ffffff";
                         (e.currentTarget as HTMLElement).style.transform = "none";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px #2c336c";
+                        (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px var(--ink)";
                     }}
                 >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
@@ -220,23 +220,23 @@ export default function LeftSidebar() {
                             title={config.label}
                             style={{
                                 width: 34, height: 34, borderRadius: 0, margin: "6px auto",
-                                border: "2px solid #2c336c",
-                                background: `#ddb9ac`,
+                                border: "2px solid var(--ink)",
+                                background: "#ffffff",
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 color: config.color, cursor: "grab", transition: "all 150ms",
-                                boxShadow: "2px 2px 0px 0px #2c336c", userSelect: "none",
+                                boxShadow: "2px 2px 0px 0px var(--ink)", userSelect: "none",
                             }}
                             onMouseEnter={e => {
                                 const el = e.currentTarget;
-                                el.style.background = "#c78caf";
+                                el.style.background = "var(--accent)";
                                 el.style.transform = "translate(-2px, -2px)";
-                                el.style.boxShadow = "4px 4px 0px 0px #2c336c";
+                                el.style.boxShadow = "4px 4px 0px 0px var(--ink)";
                             }}
                             onMouseLeave={e => {
                                 const el = e.currentTarget;
-                                el.style.background = "#ddb9ac";
+                                el.style.background = "#ffffff";
                                 el.style.transform = "translate(0px, 0px)";
-                                el.style.boxShadow = "2px 2px 0px 0px #2c336c";
+                                el.style.boxShadow = "2px 2px 0px 0px var(--ink)";
                             }}
                         >
                             {ICONS[config.icon]}
@@ -258,16 +258,14 @@ export default function LeftSidebar() {
                                 height: 40, padding: "0 14px",
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
                                 cursor: "pointer", userSelect: "none",
-                                borderBottom: "3px solid #2c336c",
-                                background: "#ddb9ac"
+                                borderBottom: "2px solid var(--ink)",
+                                background: "var(--accent)"
                             }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#c78caf"}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#ddb9ac"}
                         >
-                            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#2c336c" }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#ffffff" }}>
                                 Node Types
                             </span>
-                            <span style={{ color: "#2c336c" }}>
+                            <span style={{ color: "#ffffff" }}>
                                 <ChevronIcon open={paletteOpen} />
                             </span>
                         </div>
@@ -276,7 +274,7 @@ export default function LeftSidebar() {
                         {paletteOpen && (
                             <div style={{
                                 padding: "10px",
-                                borderBottom: "3px solid #2c336c",
+                                borderBottom: "2px solid var(--ink)",
                                 display: "grid",
                                 gridTemplateColumns: "repeat(2, 1fr)",
                                 gap: "8px"
@@ -289,9 +287,9 @@ export default function LeftSidebar() {
                                         style={{
                                             height: 32,
                                             borderRadius: 6,
-                                            border: "1.5px solid #2c336c",
-                                            background: `#f3f3f2`,
-                                            boxShadow: "2px 2px 0px 0px #2c336c",
+                                            border: "2px solid var(--ink)",
+                                            background: "#ffffff",
+                                            boxShadow: "2px 2px 0px 0px var(--ink)",
                                             display: "flex", alignItems: "center", gap: 6,
                                             padding: "0 6px",
                                             cursor: "grab", userSelect: "none",
@@ -301,14 +299,14 @@ export default function LeftSidebar() {
                                         onMouseEnter={e => {
                                             const el = e.currentTarget;
                                             el.style.transform = "translate(-2px, -2px)";
-                                            el.style.boxShadow = "4px 4px 0px 0px #2c336c";
-                                            el.style.background = "#ddb9ac";
+                                            el.style.boxShadow = "4px 4px 0px 0px var(--ink)";
+                                            el.style.background = "#ffffff";
                                         }}
                                         onMouseLeave={e => {
                                             const el = e.currentTarget;
                                             el.style.transform = "translate(0px, 0px)";
-                                            el.style.boxShadow = "2px 2px 0px 0px #2c336c";
-                                            el.style.background = "#f3f3f2";
+                                            el.style.boxShadow = "2px 2px 0px 0px var(--ink)";
+                                            el.style.background = "#ffffff";
                                         }}
                                     >
                                         {/* Icon (colored by node type) */}
@@ -316,7 +314,7 @@ export default function LeftSidebar() {
                                             {React.cloneElement(ICONS[config.icon] as React.ReactElement<any>, { width: 12, height: 12, strokeWidth: 2.5 })}
                                         </span>
                                         {/* Label */}
-                                        <span style={{ fontSize: 11, fontWeight: 800, color: "#2c336c", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        <span style={{ fontSize: 11, fontWeight: 800, color: "var(--ink)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                             {config.label}
                                         </span>
                                     </div>
@@ -336,17 +334,15 @@ export default function LeftSidebar() {
                                 height: 40, padding: "0 14px",
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
                                 cursor: "pointer", userSelect: "none",
-                                borderBottom: "3px solid #2c336c",
-                                background: "#ddb9ac",
+                                borderBottom: "2px solid var(--ink)",
+                                background: "var(--accent)",
                                 flexShrink: 0,
                             }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#c78caf"}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "#ddb9ac"}
                         >
-                            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#2c336c" }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#ffffff" }}>
                                 Project
                             </span>
-                            <span style={{ color: "#2c336c" }}>
+                            <span style={{ color: "#ffffff" }}>
                                 <ChevronIcon open={projectOpen} />
                             </span>
                         </div>
@@ -364,9 +360,9 @@ export default function LeftSidebar() {
                                                 onBlur={handleNameSave}
                                                 onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
                                                 style={{
-                                                    flex: 1, minWidth: 0, fontSize: 13, fontWeight: 800, color: "#2c336c",
-                                                    background: "#ffffff", border: "2px solid #2c336c",
-                                                    boxShadow: "2px 2px 0px 0px #2c336c", outline: "none",
+                                                    flex: 1, minWidth: 0, fontSize: 13, fontWeight: 800, color: "var(--ink)",
+                                                    background: "#ffffff", border: "2px solid var(--ink)",
+                                                    boxShadow: "2px 2px 0px 0px var(--ink)", outline: "none",
                                                     padding: "8px 10px", boxSizing: "border-box",
                                                 }}
                                             />
@@ -378,13 +374,13 @@ export default function LeftSidebar() {
                                                 style={{
                                                     height: 35,
                                                     padding: "0 10px",
-                                                    border: "2px solid #2c336c",
-                                                    background: "#c78caf",
-                                                    color: "#2c336c",
+                                                    border: "2px solid var(--ink)",
+                                                    background: "var(--accent)",
+                                                    color: "#ffffff",
                                                     fontSize: 12,
                                                     fontWeight: 700,
                                                     cursor: "pointer",
-                                                    boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
+                                                    boxShadow: "2px 2px 0px 0px var(--ink)",
                                                 }}
                                             >
                                                 Save
@@ -395,27 +391,27 @@ export default function LeftSidebar() {
                                             onClick={() => { setNameInput(projectName); setEditingName(true); }}
                                             style={{
                                                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                                                border: "1.5px solid #2c336c", boxShadow: "2px 2px 0px 0px #2c336c",
-                                                background: "#f3f3f2", padding: "8px 10px", cursor: "pointer",
+                                                border: "2px solid var(--ink)", boxShadow: "2px 2px 0px 0px var(--ink)",
+                                                background: "#ffffff", padding: "8px 10px", cursor: "pointer",
                                                 transition: "all 150ms",
                                             }}
                                             onMouseEnter={e => {
                                                 const el = e.currentTarget;
                                                 el.style.transform = "translate(-2px, -2px)";
-                                                el.style.boxShadow = "4px 4px 0px 0px #2c336c";
-                                                el.style.background = "#ddb9ac";
+                                                el.style.boxShadow = "4px 4px 0px 0px var(--ink)";
+                                                el.style.background = "#ffffff";
                                             }}
                                             onMouseLeave={e => {
                                                 const el = e.currentTarget;
                                                 el.style.transform = "translate(0px, 0px)";
-                                                el.style.boxShadow = "2px 2px 0px 0px #2c336c";
-                                                el.style.background = "#f3f3f2";
+                                                el.style.boxShadow = "2px 2px 0px 0px var(--ink)";
+                                                el.style.background = "#ffffff";
                                             }}
                                         >
-                                            <span style={{ fontSize: 13, fontWeight: 800, color: "#2c336c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                            <span style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                                 {projectName}
                                             </span>
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2c336c" strokeWidth="2.5" style={{ flexShrink: 0, opacity: 0.55, marginLeft: 6 }}>
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="2.5" style={{ flexShrink: 0, opacity: 0.55, marginLeft: 6 }}>
                                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                                             </svg>
@@ -424,19 +420,19 @@ export default function LeftSidebar() {
 
                                     {/* Last saved + version count stat strip */}
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
-                                        <div style={{ border: "1.5px solid #2c336c", boxShadow: "2px 2px 0px 0px #2c336c", background: "#f3f3f2", padding: "6px 8px" }}>
+                                        <div style={{ border: "2px solid var(--ink)", boxShadow: "2px 2px 0px 0px var(--ink)", background: "#ffffff", padding: "6px 8px" }}>
                                             <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(44,51,108,0.55)" }}>
                                                 Last saved
                                             </div>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: "#2c336c", marginTop: 2 }}>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)", marginTop: 2 }}>
                                                 {timeAgo(lastSavedAt)}
                                             </div>
                                         </div>
-                                        <div style={{ border: "1.5px solid #2c336c", boxShadow: "2px 2px 0px 0px #2c336c", background: "#f3f3f2", padding: "6px 8px" }}>
+                                        <div style={{ border: "2px solid var(--ink)", boxShadow: "2px 2px 0px 0px var(--ink)", background: "#ffffff", padding: "6px 8px" }}>
                                             <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(44,51,108,0.55)" }}>
                                                 Versions
                                             </div>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: "#2c336c", marginTop: 2 }}>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)", marginTop: 2 }}>
                                                 {versions.length}
                                             </div>
                                         </div>
@@ -452,9 +448,9 @@ export default function LeftSidebar() {
                                 <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "0 10px 10px" }}>
                                     <div
                                         style={{
-                                            border: "1.5px solid #2c336c",
-                                            boxShadow: "2px 2px 0px 0px #2c336c",
-                                            background: "#f3f3f2",
+                                            border: "2px solid var(--ink)",
+                                            boxShadow: "2px 2px 0px 0px var(--ink)",
+                                            background: "#ffffff",
                                             padding: "2px 10px",
                                             maxHeight: 34 * 4,
                                             overflowY: "auto",
@@ -482,7 +478,7 @@ export default function LeftSidebar() {
                                                 }}
                                             >
                                                 <div style={{ minWidth: 0, overflow: "hidden" }}>
-                                                    <span style={{ fontSize: 12, fontWeight: 800, color: "#2c336c" }}>
+                                                    <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)" }}>
                                                         Version {v.versionNumber}
                                                     </span>
                                                     <span style={{ fontSize: 10, color: "rgba(44,51,108,0.55)", fontWeight: 600, marginLeft: 6 }}>
@@ -499,8 +495,8 @@ export default function LeftSidebar() {
                                                                 disabled={versionMutationPending}
                                                                 style={{
                                                                     height: 22, padding: "0 6px", fontSize: 10, fontWeight: 800,
-                                                                    border: "2px solid #2c336c", background: "#e0707a",
-                                                                    color: "#2c336c", cursor: versionMutationPending ? "default" : "pointer",
+                                                                    border: "2px solid var(--ink)", background: "var(--stone)",
+                                                                    color: "var(--ink)", cursor: versionMutationPending ? "default" : "pointer",
                                                                     opacity: versionMutationPending ? 0.6 : 1,
                                                                 }}
                                                             >
@@ -511,8 +507,8 @@ export default function LeftSidebar() {
                                                                 disabled={versionMutationPending}
                                                                 style={{
                                                                     height: 22, padding: "0 6px", fontSize: 10, fontWeight: 800,
-                                                                    border: "2px solid #2c336c", background: "#ffffff",
-                                                                    color: "#2c336c", cursor: versionMutationPending ? "default" : "pointer",
+                                                                    border: "2px solid var(--ink)", background: "#ffffff",
+                                                                    color: "var(--ink)", cursor: versionMutationPending ? "default" : "pointer",
                                                                     opacity: versionMutationPending ? 0.6 : 1,
                                                                 }}
                                                             >
@@ -527,8 +523,8 @@ export default function LeftSidebar() {
                                                                 title="Restore onto canvas"
                                                                 style={{
                                                                     width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center",
-                                                                    border: "2px solid #2c336c", background: "#c78caf",
-                                                                    color: "#2c336c", cursor: isBusy || versionMutationPending ? "default" : "pointer", flexShrink: 0,
+                                                                    border: "2px solid var(--ink)", background: "var(--accent)",
+                                                                    color: "#ffffff", cursor: isBusy || versionMutationPending ? "default" : "pointer", flexShrink: 0,
                                                                     opacity: versionMutationPending && !isBusy ? 0.6 : 1,
                                                                 }}
                                                             >
@@ -543,8 +539,8 @@ export default function LeftSidebar() {
                                                                 title="Delete version"
                                                                 style={{
                                                                     width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center",
-                                                                    border: "2px solid #2c336c", background: "#ffffff",
-                                                                    color: "#2c336c", cursor: versionMutationPending ? "default" : "pointer", flexShrink: 0,
+                                                                    border: "2px solid var(--ink)", background: "#ffffff",
+                                                                    color: "var(--ink)", cursor: versionMutationPending ? "default" : "pointer", flexShrink: 0,
                                                                     opacity: versionMutationPending ? 0.6 : 1,
                                                                 }}
                                                             >

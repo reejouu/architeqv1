@@ -31,32 +31,30 @@ const ToolBtn = ({
       width: 26,
       height: 26,
       borderRadius: 0,
-      border: "2px solid #2c336c",
-      background: danger ? "#bf979e" : "#ffffff",
-      color: "#2c336c",
+      border: "2px solid var(--ink)",
+      background: "#ffffff",
+      color: danger ? "#A8454C" : "var(--ink)",
       cursor: "pointer",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       transition: "all 150ms",
-      boxShadow: "2px 2px 0px 0px #2c336c",
+      boxShadow: "2px 2px 0px 0px var(--ink)",
     }}
     onMouseEnter={(e) => {
       (e.currentTarget as HTMLElement).style.background = danger
-        ? "#e0b0b8"
+        ? "#fbeaec"
         : "#f3f3f2";
       (e.currentTarget as HTMLElement).style.transform =
         "translate(-1px, -1px)";
       (e.currentTarget as HTMLElement).style.boxShadow =
-        "3px 3px 0px 0px #2c336c";
+        "3px 3px 0px 0px var(--ink)";
     }}
     onMouseLeave={(e) => {
-      (e.currentTarget as HTMLElement).style.background = danger
-        ? "#bf979e"
-        : "#ffffff";
+      (e.currentTarget as HTMLElement).style.background = "#ffffff";
       (e.currentTarget as HTMLElement).style.transform = "translate(0, 0)";
       (e.currentTarget as HTMLElement).style.boxShadow =
-        "2px 2px 0px 0px #2c336c";
+        "2px 2px 0px 0px var(--ink)";
     }}
   >
     {children}
@@ -154,8 +152,8 @@ export default function ArchNode({
           height: 12,
           borderRadius: 0,
           background: "#c78caf",
-          border: "2px solid #2c336c",
-          boxShadow: "2px 2px 0px 0px #2c336c",
+          border: "2px solid var(--ink)",
+          boxShadow: "2px 2px 0px 0px var(--ink)",
           zIndex: 10,
         }}
       />
@@ -169,13 +167,13 @@ export default function ArchNode({
         <div
           style={{
             background: "#c78caf",
-            border: "2px solid #2c336c",
+            border: "2px solid var(--ink)",
             borderRadius: 0,
             padding: "4px 6px",
             display: "flex",
             gap: 4,
             alignItems: "center",
-            boxShadow: "3px 3px 0px 0px #2c336c",
+            boxShadow: "3px 3px 0px 0px var(--ink)",
           }}
         >
           <ToolBtn
@@ -229,7 +227,7 @@ export default function ArchNode({
             style={{
               width: 2,
               height: 20,
-              background: "#2c336c",
+              background: "var(--ink)",
               margin: "0 2px",
             }}
           />
@@ -290,13 +288,13 @@ export default function ArchNode({
             height: "100%",
             borderRadius: 14,
             background: "#ffffff",
-            border: `2.5px solid #2c336c`,
+            border: `2px solid var(--ink)`,
             boxShadow:
               selected && interactionMode !== "drawEdge"
-                ? "6px 6px 0px 0px #2c336c"
+                ? "6px 6px 0px 0px var(--ink)"
                 : hovered
-                  ? "4px 4px 0px 0px #2c336c"
-                  : "3px 3px 0px 0px #2c336c",
+                  ? "4px 4px 0px 0px var(--ink)"
+                  : "3px 3px 0px 0px var(--ink)",
             cursor: "default",
             userSelect: "none",
             overflow: "hidden",
@@ -310,7 +308,7 @@ export default function ArchNode({
           <div
             style={{
               background: baseColor,
-              borderBottom: "3px solid #2c336c",
+              borderBottom: "3px solid var(--ink)",
               padding: "11px 12px 11px 14px",
               display: "flex",
               alignItems: "flex-start",
@@ -337,7 +335,7 @@ export default function ArchNode({
                       : fontFamily === "poppins"
                         ? "Poppins, sans-serif"
                         : "var(--font-inter)",
-                color: isLightBg ? "#2c336c" : "#ffffff",
+                color: isLightBg ? "var(--ink)" : "#ffffff",
                 flex: 1,
                 lineHeight: 1.25,
                 wordBreak: "break-word",
@@ -372,7 +370,7 @@ export default function ArchNode({
                         : Number(data.priorityScore) === 2
                           ? "#F59E0B"
                           : "#10B981",
-                    border: "2px solid #2c336c",
+                    border: "2px solid var(--ink)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -425,12 +423,12 @@ export default function ArchNode({
                         : "var(--font-inter)",
                 textTransform: "uppercase",
                 letterSpacing: "0.06em",
-                color: isLightBg ? "#2c336c" : "#ffffff",
+                color: isLightBg ? "var(--ink)" : "#ffffff",
                 background: baseColor,
-                border: "1.5px solid #2c336c",
+                border: "1.5px solid var(--ink)",
                 borderRadius: 6,
                 padding: "3px 9px",
-                boxShadow: "2px 2px 0px 0px #2c336c",
+                boxShadow: "2px 2px 0px 0px var(--ink)",
               }}
             >
               {nodeType}
@@ -449,12 +447,12 @@ export default function ArchNode({
                         : fontFamily === "poppins"
                           ? "Poppins, sans-serif"
                           : "var(--font-inter)",
-                  color: "#2c336c",
+                  color: "var(--ink)",
                   background: statusStyle.bg,
-                  border: "1.5px solid #2c336c",
+                  border: "1.5px solid var(--ink)",
                   borderRadius: 6,
                   padding: "3px 9px",
-                  boxShadow: "1px 1px 0px 0px #2c336c",
+                  boxShadow: "1px 1px 0px 0px var(--ink)",
                 }}
               >
                 {status}
@@ -501,7 +499,7 @@ export default function ArchNode({
               height: 14,
               borderRadius: "50%",
               background: baseColor,
-              border: "3px solid #2c336c",
+              border: "3px solid var(--ink)",
               opacity: hovered && interactionMode === "drawEdge" ? 1 : 0,
               transition: "all 150ms",
             }}
@@ -544,7 +542,7 @@ export default function ArchNode({
               height: 14,
               borderRadius: "50%",
               background: baseColor,
-              border: "3px solid #2c336c",
+              border: "3px solid var(--ink)",
               opacity: hovered && interactionMode === "drawEdge" ? 1 : 0,
               transition: "all 150ms",
             }}
@@ -587,7 +585,7 @@ export default function ArchNode({
               height: 14,
               borderRadius: "50%",
               background: baseColor,
-              border: "3px solid #2c336c",
+              border: "3px solid var(--ink)",
               opacity: hovered && interactionMode === "drawEdge" ? 1 : 0,
               transition: "all 150ms",
             }}
@@ -630,7 +628,7 @@ export default function ArchNode({
               height: 14,
               borderRadius: "50%",
               background: baseColor,
-              border: "3px solid #2c336c",
+              border: "3px solid var(--ink)",
               opacity: hovered && interactionMode === "drawEdge" ? 1 : 0,
               transition: "all 150ms",
             }}

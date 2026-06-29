@@ -9,9 +9,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Architeq — AI Architecture Platform",
+  title: "Architeq",
   description:
     "Type an idea → AI generates a live, visual architecture graph → team collaborates, edits, and owns it.",
+  icons: {
+    icon: "/logo/Architeq%20Logo.png",
+  },
 };
 
 export default function RootLayout({

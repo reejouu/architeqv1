@@ -2,7 +2,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import CanvasPage from "@/components/canvas/CanvasPage";
 
 export const metadata = {
-    title: "Canvas — Architeq",
+    title: "Architeq",
     description: "Build and visualize your system architecture",
 };
 
