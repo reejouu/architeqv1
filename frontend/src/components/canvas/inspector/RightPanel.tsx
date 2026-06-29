@@ -18,7 +18,7 @@ const Section = ({
 }) => {
   const [open, setOpen] = useState(true);
   return (
-    <div style={{ borderBottom: "3px solid #2c336c" }}>
+    <div style={{ borderBottom: "2px solid var(--ink)" }}>
       <div
         onClick={() => setOpen((o) => !o)}
         style={{
@@ -31,17 +31,11 @@ const Section = ({
           fontWeight: 700,
           textTransform: "uppercase",
           letterSpacing: "0.1em",
-          color: "#2c336c",
-          background: "#ddb9ac",
-          borderBottom: open ? "3px solid #2c336c" : "none",
+          color: "#ffffff",
+          background: "var(--accent)",
+          borderBottom: open ? "2px solid var(--ink)" : "none",
           cursor: "pointer",
         }}
-        onMouseEnter={(e) =>
-          ((e.currentTarget as HTMLElement).style.background = "#c78caf")
-        }
-        onMouseLeave={(e) =>
-          ((e.currentTarget as HTMLElement).style.background = "#ddb9ac")
-        }
       >
         {title}
         <svg
@@ -76,7 +70,7 @@ const Field = ({
       style={{
         fontSize: 12,
         fontWeight: 700,
-        color: "#2c336c",
+        color: "var(--ink)",
         textTransform: "uppercase",
         letterSpacing: "0.08em",
       }}
@@ -90,16 +84,16 @@ const Field = ({
 const inputStyle: React.CSSProperties = {
   height: 36,
   padding: "0 10px",
-  background: "#ffffff",
-  border: "2px solid #2c336c",
+  background: "var(--white)",
+  border: "2px solid var(--ink)",
   borderRadius: 0,
   fontSize: 14,
-  color: "#2c336c",
+  color: "var(--ink)",
   outline: "none",
   width: "100%",
   boxSizing: "border-box",
   transition: "all 150ms",
-  boxShadow: "2px 2px 0px 0px #2c336c",
+  boxShadow: "2px 2px 0px 0px var(--ink)",
 };
 
 const CustomSelect = ({
@@ -141,14 +135,14 @@ const CustomSelect = ({
           alignItems: "center",
           justifyContent: "space-between",
           cursor: "pointer",
-          background: open ? "#ddb9ac" : "#ffffff",
+          background: "var(--white)",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.boxShadow = "4px 4px 0px 0px #2c336c";
+          e.currentTarget.style.boxShadow = "4px 4px 0px 0px var(--ink)";
           e.currentTarget.style.transform = "translate(-2px, -2px)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.boxShadow = "2px 2px 0px 0px #2c336c";
+          e.currentTarget.style.boxShadow = "2px 2px 0px 0px var(--ink)";
           e.currentTarget.style.transform = "translate(0px, 0px)";
         }}
       >
@@ -178,9 +172,9 @@ const CustomSelect = ({
             left: 0,
             right: 0,
             marginTop: 4,
-            background: "#ffffff",
-            border: "2px solid #2c336c",
-            boxShadow: "3px 3px 0px 0px #2c336c",
+            background: "var(--white)",
+            border: "2px solid var(--ink)",
+            boxShadow: "3px 3px 0px 0px var(--ink)",
             zIndex: 100,
             maxHeight: 200,
             overflowY: "auto",
@@ -199,18 +193,20 @@ const CustomSelect = ({
                 padding: "8px 10px",
                 fontSize: 13,
                 fontWeight: 600,
-                color: "#2c336c",
+                color: "var(--ink)",
                 cursor: "pointer",
-                background: value === opt.value ? "#ddb9ac" : "#ffffff",
+                background: value === opt.value ? "var(--stone)" : "var(--white)",
                 borderBottom: "1px solid rgba(44, 51, 108, 0.1)",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#c78caf")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background =
-                  value === opt.value ? "#ddb9ac" : "#ffffff")
-              }
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--purple)";
+                e.currentTarget.style.color = "#ffffff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background =
+                  value === opt.value ? "var(--stone)" : "var(--white)";
+                e.currentTarget.style.color = "var(--ink)";
+              }}
             >
               {opt.label}
             </div>
@@ -303,8 +299,8 @@ export default function RightPanel() {
         bottom: 48,
         width: 280,
         zIndex: 50,
-        background: "#bfb3ca",
-        borderLeft: "3px solid #2c336c",
+        background: "var(--stone)",
+        borderLeft: "2px solid var(--ink)",
         display: "flex",
         flexDirection: "column",
         overflowY: "auto",
@@ -322,8 +318,8 @@ export default function RightPanel() {
               alignItems: "center",
               justifyContent: "space-between",
               padding: "0 16px",
-              borderBottom: "3px solid #2c336c",
-              background: "#bfb3ca",
+              borderBottom: "2px solid var(--ink)",
+              background: "var(--stone)",
               flexShrink: 0,
             }}
           >
@@ -333,12 +329,12 @@ export default function RightPanel() {
                   width: 14,
                   height: 14,
                   borderRadius: 0,
-                  border: "2px solid #2c336c",
+                  border: "2px solid var(--ink)",
                   background: baseColor,
                   flexShrink: 0,
                 }}
               />
-              <span style={{ fontSize: 16, fontWeight: 700, color: "#2c336c" }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>
                 {selectedNode.data.label !== undefined &&
                 selectedNode.data.label !== ""
                   ? String(selectedNode.data.label)
@@ -351,17 +347,17 @@ export default function RightPanel() {
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
-                color: "#2c336c",
+                color: "var(--ink)",
                 fontSize: 24,
                 fontWeight: "bold",
                 lineHeight: 1,
                 padding: 4,
               }}
               onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLElement).style.color = "#636798")
+                ((e.currentTarget as HTMLElement).style.color = "var(--purple)")
               }
               onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLElement).style.color = "#2c336c")
+                ((e.currentTarget as HTMLElement).style.color = "var(--ink)")
               }
             >
               ×
@@ -397,11 +393,11 @@ export default function RightPanel() {
                     );
                   }}
                   onFocus={(e) => {
-                    e.target.style.boxShadow = "4px 4px 0px 0px #2c336c";
+                    e.target.style.boxShadow = "4px 4px 0px 0px var(--ink)";
                     e.target.style.transform = "translate(-2px, -2px)";
                   }}
                   onBlur={(e) => {
-                    e.target.style.boxShadow = "2px 2px 0px 0px #2c336c";
+                    e.target.style.boxShadow = "2px 2px 0px 0px var(--ink)";
                     e.target.style.transform = "translate(0px, 0px)";
                   }}
                 />
@@ -454,11 +450,11 @@ export default function RightPanel() {
                       );
                     }}
                     onFocus={(e) => {
-                      e.target.style.boxShadow = "4px 4px 0px 0px #2c336c";
+                      e.target.style.boxShadow = "4px 4px 0px 0px var(--ink)";
                       e.target.style.transform = "translate(-2px, -2px)";
                     }}
                     onBlur={(e) => {
-                      e.target.style.boxShadow = "2px 2px 0px 0px #2c336c";
+                      e.target.style.boxShadow = "2px 2px 0px 0px var(--ink)";
                       e.target.style.transform = "translate(0px, 0px)";
                     }}
                   />
@@ -495,11 +491,11 @@ export default function RightPanel() {
                     lineHeight: 1.5,
                   }}
                   onFocus={(e) => {
-                    e.target.style.boxShadow = "4px 4px 0px 0px #2c336c";
+                    e.target.style.boxShadow = "4px 4px 0px 0px var(--ink)";
                     e.target.style.transform = "translate(-2px, -2px)";
                   }}
                   onBlur={(e) => {
-                    e.target.style.boxShadow = "2px 2px 0px 0px #2c336c";
+                    e.target.style.boxShadow = "2px 2px 0px 0px var(--ink)";
                     e.target.style.transform = "translate(0px, 0px)";
                   }}
                 />
@@ -524,26 +520,26 @@ export default function RightPanel() {
                     height: 32,
                     borderRadius: 0,
                     background: baseColor,
-                    border: `2px solid #2c336c`,
+                    border: "2px solid var(--ink)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 13,
                     fontWeight: 700,
-                    color: "#2c336c",
-                    boxShadow: "2px 2px 0px 0px #2c336c",
+                    color: "var(--ink)",
+                    boxShadow: "2px 2px 0px 0px var(--ink)",
                   }}
                 >
                   {String(selectedNode.data.owner || "PK").slice(0, 2).toUpperCase()}
                 </div>
                 <div>
                   <div
-                    style={{ fontSize: 14, fontWeight: 700, color: "#2c336c" }}
+                    style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}
                   >
                     Primary Owner
                   </div>
                   <div
-                    style={{ fontSize: 12, fontWeight: 600, color: "#636798" }}
+                    style={{ fontSize: 12, fontWeight: 600, color: "var(--purple)" }}
                   >
                     Lead Engineer
                   </div>
@@ -554,9 +550,9 @@ export default function RightPanel() {
                   width: "100%",
                   height: 36,
                   borderRadius: 0,
-                  border: "2px dashed #2c336c",
-                  background: "#f3f3f2",
-                  color: "#2c336c",
+                  border: "2px dashed var(--ink)",
+                  background: "var(--white)",
+                  color: "var(--ink)",
                   fontSize: 13,
                   fontWeight: 700,
                   cursor: "pointer",
@@ -568,15 +564,15 @@ export default function RightPanel() {
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.borderStyle = "solid";
-                  (e.currentTarget as HTMLElement).style.background = "#ddb9ac";
+                  (e.currentTarget as HTMLElement).style.background = "var(--white)";
                   (e.currentTarget as HTMLElement).style.boxShadow =
-                    "2px 2px 0px 0px #2c336c";
+                    "2px 2px 0px 0px var(--ink)";
                   (e.currentTarget as HTMLElement).style.transform =
                     "translate(-2px, -2px)";
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderStyle = "dashed";
-                  (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
+                  (e.currentTarget as HTMLElement).style.background = "var(--white)";
                   (e.currentTarget as HTMLElement).style.boxShadow = "none";
                   (e.currentTarget as HTMLElement).style.transform =
                     "translate(0px, 0px)";
@@ -609,14 +605,14 @@ export default function RightPanel() {
                     height: 26,
                     padding: "0 10px",
                     borderRadius: 0,
-                    background: "#f3f3f2",
-                    border: "2px solid #2c336c",
-                    color: "#2c336c",
+                    background: "var(--white)",
+                    border: "2px solid var(--ink)",
+                    color: "var(--ink)",
                     fontSize: 12,
                     fontWeight: 700,
                     display: "flex",
                     alignItems: "center",
-                    boxShadow: "2px 2px 0px 0px #2c336c",
+                    boxShadow: "2px 2px 0px 0px var(--ink)",
                   }}
                 >
                   {tag}
@@ -626,17 +622,17 @@ export default function RightPanel() {
                 style={{
                   fontSize: 13,
                   fontWeight: 700,
-                  color: "#2c336c",
+                  color: "var(--ink)",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   paddingLeft: 4,
                 }}
                 onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLElement).style.color = "#c78caf")
+                  ((e.currentTarget as HTMLElement).style.color = "var(--purple)")
                 }
                 onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLElement).style.color = "#2c336c")
+                  ((e.currentTarget as HTMLElement).style.color = "var(--ink)")
                 }
               >
                 + Add tag
@@ -667,7 +663,7 @@ export default function RightPanel() {
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
-                      color: "#2c336c",
+                      color: "var(--ink)",
                       textTransform: "uppercase",
                       letterSpacing: "0.08em",
                       marginBottom: 4,
@@ -682,10 +678,10 @@ export default function RightPanel() {
                         fontWeight: 700,
                         padding: "2px 8px",
                         borderRadius: 0,
-                        background: "#c78caf",
-                        color: "#2c336c",
-                        border: "2px solid #2c336c",
-                        boxShadow: "2px 2px 0px 0px #2c336c",
+                        background: "var(--accent)",
+                        color: "#ffffff",
+                        border: "2px solid var(--ink)",
+                        boxShadow: "2px 2px 0px 0px var(--ink)",
                         display: "inline-block",
                       }}
                     >
@@ -696,7 +692,7 @@ export default function RightPanel() {
                       style={{
                         fontSize: 13,
                         fontWeight: 600,
-                        color: "#2c336c",
+                        color: "var(--ink)",
                       }}
                     >
                       {v}

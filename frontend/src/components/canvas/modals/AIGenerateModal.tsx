@@ -10,16 +10,16 @@ const PlaceholderToggle = ({ label }: { label: string }) => {
       onClick={() => setActive((a) => !a)}
       style={{
         height: 32,
-        padding: "0 12px",
-        borderRadius: 0,
-        border: "2px solid #2c336c",
-        background: active ? "#c78caf" : "#f3f3f2",
-        color: "#2c336c",
+        padding: "0 14px",
+        borderRadius: 9999,
+        border: "2px solid var(--ink)",
+        background: active ? "var(--purple)" : "rgba(30,26,56,0.03)",
+        color: active ? "#ffffff" : "var(--ink)",
         fontSize: 13,
         fontWeight: 700,
         cursor: "pointer",
         transition: "all 150ms",
-        boxShadow: active ? "none" : "2px 2px 0px 0px #2c336c",
+        boxShadow: active ? "none" : "2px 2px 0px 0px var(--ink)",
         transform: active ? "translate(2px, 2px)" : "translate(0, 0)",
       }}
     >
@@ -117,11 +117,11 @@ export default function AIGenerateModal() {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 560,
-          background: "#ddb9ac",
-          border: "4px solid #2c336c",
+          background: "var(--cream)",
+          border: "4px solid var(--ink)",
           borderRadius: 0,
           padding: 32,
-          boxShadow: "12px 12px 0px 0px #2c336c",
+          boxShadow: "12px 12px 0px 0px var(--ink)",
           position: "relative",
         }}
       >
@@ -138,13 +138,13 @@ export default function AIGenerateModal() {
             width="28"
             height="28"
             viewBox="0 0 24 24"
-            fill="#c78caf"
-            stroke="#2c336c"
+            fill="var(--accent)"
+            stroke="var(--ink)"
             strokeWidth="2.5"
           >
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
-          <span style={{ fontSize: 22, fontWeight: 800, color: "#2c336c" }}>
+          <span style={{ fontSize: 22, fontWeight: 800, color: "var(--ink)" }}>
             Generate Architecture
           </span>
           <button
@@ -153,10 +153,10 @@ export default function AIGenerateModal() {
               position: "absolute",
               top: 20,
               right: 20,
-              background: "#f3f3f2",
-              border: "2px solid #2c336c",
+              background: "var(--white)",
+              border: "2px solid var(--ink)",
               cursor: "pointer",
-              color: "#2c336c",
+              color: "var(--ink)",
               fontSize: 24,
               fontWeight: "bold",
               width: 36,
@@ -164,7 +164,7 @@ export default function AIGenerateModal() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "2px 2px 0px 0px #2c336c",
+              boxShadow: "2px 2px 0px 0px var(--ink)",
               transition: "all 150ms",
             }}
             onMouseEnter={(e) => {
@@ -172,14 +172,14 @@ export default function AIGenerateModal() {
               (e.currentTarget as HTMLElement).style.transform =
                 "translate(-2px, -2px)";
               (e.currentTarget as HTMLElement).style.boxShadow =
-                "4px 4px 0px 0px #2c336c";
+                "4px 4px 0px 0px var(--ink)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
+              (e.currentTarget as HTMLElement).style.background = "var(--white)";
               (e.currentTarget as HTMLElement).style.transform =
                 "translate(0, 0)";
               (e.currentTarget as HTMLElement).style.boxShadow =
-                "2px 2px 0px 0px #2c336c";
+                "2px 2px 0px 0px var(--ink)";
             }}
           >
             ×
@@ -190,7 +190,7 @@ export default function AIGenerateModal() {
           style={{
             fontSize: 16,
             fontWeight: 600,
-            color: "#636798",
+            color: "var(--ink)",
             marginBottom: 20,
           }}
         >
@@ -206,13 +206,13 @@ export default function AIGenerateModal() {
           style={{
             width: "100%",
             height: 120,
-            background: "#f3f3f2",
-            border: "3px solid #2c336c",
+            background: "#ffffff",
+            border: "3px solid var(--ink)",
             borderRadius: 0,
             padding: "16px",
             fontSize: 15,
             fontWeight: 600,
-            color: "#2c336c",
+            color: "var(--ink)",
             lineHeight: 1.6,
             resize: "none",
             outline: "none",
@@ -220,17 +220,17 @@ export default function AIGenerateModal() {
             marginBottom: 16,
             display: "block",
             transition: "all 150ms",
-            boxShadow: "4px 4px 0px 0px #2c336c",
+            boxShadow: "4px 4px 0px 0px var(--ink)",
           }}
           onFocus={(e) => {
-            e.target.style.background = "#fff8f5";
+            e.target.style.background = "#ffffff";
             e.target.style.transform = "translate(-2px, -2px)";
-            e.target.style.boxShadow = "6px 6px 0px 0px #2c336c";
+            e.target.style.boxShadow = "6px 6px 0px 0px var(--ink)";
           }}
           onBlur={(e) => {
-            e.target.style.background = "#f3f3f2";
+            e.target.style.background = "#ffffff";
             e.target.style.transform = "translate(0, 0)";
-            e.target.style.boxShadow = "4px 4px 0px 0px #2c336c";
+            e.target.style.boxShadow = "4px 4px 0px 0px var(--ink)";
           }}
         />
 
@@ -256,28 +256,24 @@ export default function AIGenerateModal() {
               height: 44,
               padding: "0 20px",
               borderRadius: 0,
-              border: "3px solid #2c336c",
-              background: "#f3f3f2",
-              color: "#2c336c",
+              border: "2px solid var(--ink)",
+              background: "#ffffff",
+              color: "var(--ink)",
               fontSize: 15,
               fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "4px 4px 0px 0px #2c336c",
+              boxShadow: "3px 3px 0px 0px var(--ink)",
               transition: "all 150ms",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
-              (e.currentTarget as HTMLElement).style.transform =
-                "translate(-2px, -2px)";
-              (e.currentTarget as HTMLElement).style.boxShadow =
-                "6px 6px 0px 0px #2c336c";
+              (e.currentTarget as HTMLElement).style.background = "#bf979e";
+              (e.currentTarget as HTMLElement).style.transform = "translate(-1px, -1px)";
+              (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px var(--ink)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#f3f3f2";
-              (e.currentTarget as HTMLElement).style.transform =
-                "translate(0, 0)";
-              (e.currentTarget as HTMLElement).style.boxShadow =
-                "4px 4px 0px 0px #2c336c";
+              (e.currentTarget as HTMLElement).style.background = "#ffffff";
+              (e.currentTarget as HTMLElement).style.transform = "translate(0, 0)";
+              (e.currentTarget as HTMLElement).style.boxShadow = "3px 3px 0px 0px var(--ink)";
             }}
           >
             Cancel
@@ -289,9 +285,9 @@ export default function AIGenerateModal() {
               height: 44,
               padding: "0 24px",
               borderRadius: 0,
-              border: "3px solid #2c336c",
-              background: !prompt.trim() ? "#bfb3ca" : "#c78caf",
-              color: "#2c336c",
+              border: "2px solid var(--ink)",
+              background: "var(--accent)",
+              color: "#ffffff",
               fontSize: 15,
               fontWeight: 800,
               cursor: !prompt.trim() ? "not-allowed" : "pointer",
@@ -299,10 +295,20 @@ export default function AIGenerateModal() {
               alignItems: "center",
               gap: 8,
               transition: "all 150ms",
-              boxShadow: !prompt.trim() ? "none" : "4px 4px 0px 0px #2c336c",
-              transform: !prompt.trim()
-                ? "translate(4px, 4px)"
-                : "translate(0, 0)",
+              opacity: !prompt.trim() ? 0.45 : 1,
+              boxShadow: "4px 4px 0px 0px var(--ink)",
+            }}
+            onMouseEnter={(e) => {
+              if (prompt.trim()) {
+                (e.currentTarget as HTMLElement).style.background = "#8F4766";
+                (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "6px 6px 0px 0px var(--ink)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "var(--accent)";
+              (e.currentTarget as HTMLElement).style.transform = "translate(0, 0)";
+              (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px var(--ink)";
             }}
           >
             Generate →

@@ -4,21 +4,26 @@ import Link from "next/link";
 
 export default function FinalCTA() {
     return (
-        <section className="relative w-full min-h-[500px] flex items-center justify-center py-32 text-center reveal overflow-hidden border-t-[4px] border-[#2c336c] bg-transparent">
-
-            <div className="relative z-10 px-6 max-w-[800px] mx-auto bg-[#bf979e] border-[4px] border-[#2c336c] p-12 shadow-[12px_12px_0_0_#2c336c]">
-                <h2 className="text-5xl lg:text-[64px] font-black leading-tight text-[#f3f3f2] mb-12">
-                    Build systems with <i className="text-[#2c336c] not-italic">clarity</i> from day one
-                </h2>
-                <Link href="/canvas">
-                    <button className="pill-primary h-14 px-8 text-[18px] mx-auto mb-6">
-                        Start with your idea <span className="ml-2 font-black">→</span>
-                    </button>
-                </Link>
-                <div className="text-[14px] font-bold text-[#f3f3f2] flex items-center justify-center gap-3 mt-4">
-                    <span className="border-b-[2px] border-[#f3f3f2]/30">No credit card required</span>
-                    <span className="text-[#2c336c] font-black">&middot;</span>
-                    <span className="border-b-[2px] border-[#f3f3f2]/30">Setup in 2 minutes</span>
+        <section className="relative w-full flex items-center justify-center py-[100px] bg-[var(--purple)] border-t-[2px] border-[var(--ink)] text-center overflow-hidden">
+            <div className="section-inner z-10 w-full flex flex-col items-center">
+                <div className="w-full max-w-[700px] mx-auto bg-[var(--white)] border-[2px] border-[var(--ink)] px-[48px] py-[64px] flex flex-col items-center text-center shadow-[8px_8px_0_0_var(--ink)]">
+                    <h2 className="text-[48px] font-black leading-[1.05] text-[var(--ink)] mb-6">
+                        Build systems with <span className="bg-[var(--accent)] text-white px-2 py-0 inline-block">clarity</span> from day one
+                    </h2>
+                    <p className="text-[16px] text-[var(--ink-soft)] max-w-[500px] mx-auto leading-[1.65]">
+                        Join hundreds of engineering teams shipping better architecture without the boilerplate.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-[16px] mt-[32px] w-full">
+                        <Link href="/canvas" className="w-full sm:w-auto">
+                            <button className="btn-primary w-full text-[13px] px-8">
+                                START BUILDING FOR FREE <span className="ml-2 font-black">→</span>
+                            </button>
+                        </Link>
+                        <button className="btn-secondary w-full sm:w-auto text-[13px] px-8">
+                            CONTACT SALES
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>

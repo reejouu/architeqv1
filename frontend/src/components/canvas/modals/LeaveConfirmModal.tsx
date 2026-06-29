@@ -30,17 +30,17 @@ export default function LeaveConfirmModal({ open, saving, onSave, onDiscard, onC
                 style={{
                     position: "relative",
                     width: 360,
-                    background: "#f3f3f2",
-                    border: "3px solid #2c336c",
-                    boxShadow: "6px 6px 0px 0px #2c336c",
+                    background: "var(--white)",
+                    border: "2px solid var(--ink)",
+                    boxShadow: "6px 6px 0px 0px var(--ink)",
                     padding: 20,
                     fontFamily: "'Inter', sans-serif",
                 }}
             >
-                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#2c336c" }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "var(--ink)" }}>
                     Unsaved changes
                 </h3>
-                <p style={{ marginTop: 8, marginBottom: 20, fontSize: 13, color: "#2c336c", lineHeight: 1.5 }}>
+                <p style={{ marginTop: 8, marginBottom: 20, fontSize: 13, color: "var(--ink)", lineHeight: 1.5 }}>
                     You have changes that haven&apos;t been saved. Save before leaving, or discard them?
                 </p>
                 <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
@@ -49,9 +49,9 @@ export default function LeaveConfirmModal({ open, saving, onSave, onDiscard, onC
                         style={{
                             height: 36,
                             padding: "0 14px",
-                            border: "2px solid #2c336c",
+                            border: "2px solid var(--ink)",
                             background: "transparent",
-                            color: "#2c336c",
+                            color: "var(--ink)",
                             fontSize: 13,
                             fontWeight: 700,
                             cursor: "pointer",
@@ -64,9 +64,9 @@ export default function LeaveConfirmModal({ open, saving, onSave, onDiscard, onC
                         style={{
                             height: 36,
                             padding: "0 14px",
-                            border: "2px solid #2c336c",
+                            border: "2px solid var(--ink)",
                             background: "#f7d9e0",
-                            color: "#2c336c",
+                            color: "var(--ink)",
                             fontSize: 13,
                             fontWeight: 700,
                             cursor: "pointer",
@@ -80,9 +80,9 @@ export default function LeaveConfirmModal({ open, saving, onSave, onDiscard, onC
                         style={{
                             height: 36,
                             padding: "0 14px",
-                            border: "2px solid #2c336c",
-                            background: "#c78caf",
-                            color: "#2c336c",
+                            border: "2px solid var(--ink)",
+                            background: "var(--accent)",
+                            color: "#ffffff",
                             fontSize: 13,
                             fontWeight: 700,
                             cursor: "pointer",

@@ -80,14 +80,14 @@ function EmptyState({ onGenerate }: { onGenerate: () => void }) {
         style={{
           width: 380,
           padding: "40px 32px",
-          border: "3px solid #2c336c",
+          border: "2px solid var(--ink)",
           borderRadius: 0,
-          background: "#f3f3f2",
+          background: "var(--white)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           gap: 20,
-          boxShadow: "6px 6px 0px 0px #2c336c",
+          boxShadow: "6px 6px 0px 0px var(--ink)",
         }}
       >
         {/* Icon */}
@@ -95,12 +95,12 @@ function EmptyState({ onGenerate }: { onGenerate: () => void }) {
           style={{
             width: 64,
             height: 64,
-            background: "#ddb9ac",
-            border: "2px solid #2c336c",
+            background: "var(--accent)",
+            border: "2px solid var(--ink)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "3px 3px 0px 0px #2c336c",
+            boxShadow: "3px 3px 0px 0px var(--ink)",
           }}
         >
           <svg
@@ -108,7 +108,7 @@ function EmptyState({ onGenerate }: { onGenerate: () => void }) {
             height="32"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#2c336c"
+            stroke="var(--white)"
             strokeWidth="2"
           >
             <rect x="2" y="3" width="20" height="14" rx="0" />
@@ -125,7 +125,7 @@ function EmptyState({ onGenerate }: { onGenerate: () => void }) {
           style={{
             fontSize: 20,
             fontWeight: 800,
-            color: "#2c336c",
+            color: "var(--ink)",
             margin: 0,
             letterSpacing: "-0.3px",
           }}
@@ -138,7 +138,7 @@ function EmptyState({ onGenerate }: { onGenerate: () => void }) {
           style={{
             fontSize: 13,
             fontWeight: 500,
-            color: "#636798",
+            color: "var(--purple)",
             margin: 0,
             lineHeight: 1.5,
             maxWidth: 260,
@@ -156,29 +156,25 @@ function EmptyState({ onGenerate }: { onGenerate: () => void }) {
             padding: "10px 24px",
             fontSize: 14,
             fontWeight: 700,
-            color: "#f3f3f2",
-            background: "#2c336c",
-            border: "2px solid #2c336c",
+            color: "var(--white)",
+            background: "var(--accent)",
+            border: "2px solid var(--ink)",
             cursor: "pointer",
-            boxShadow: "3px 3px 0px 0px #2c336c",
+            boxShadow: "3px 3px 0px 0px var(--ink)",
             transition: "all 150ms",
             letterSpacing: "0.2px",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "#c78caf";
-            (e.currentTarget as HTMLElement).style.color = "#2c336c";
             (e.currentTarget as HTMLElement).style.transform =
               "translate(-2px, -2px)";
             (e.currentTarget as HTMLElement).style.boxShadow =
-              "5px 5px 0px 0px #2c336c";
+              "5px 5px 0px 0px var(--ink)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "#2c336c";
-            (e.currentTarget as HTMLElement).style.color = "#f3f3f2";
             (e.currentTarget as HTMLElement).style.transform =
               "translate(0, 0)";
             (e.currentTarget as HTMLElement).style.boxShadow =
-              "3px 3px 0px 0px #2c336c";
+              "3px 3px 0px 0px var(--ink)";
           }}
         >
           ✨ Generate with AI
@@ -486,14 +482,14 @@ export default function CanvasArea() {
         nodesConnectable={!isLocked && interactionMode === "drawEdge"}
         connectOnClick={false}
         edgesFocusable={!isLocked}
-        style={{ background: "transparent" }}
+        style={{ background: "#ffffff" }}
         proOptions={{ hideAttribution: true }}
       >
         <Background
           variant={BackgroundVariant.Dots}
           gap={24}
-          size={1.8}
-          color="#9b9eb2"
+          size={1.2}
+          color="#c8c8d0"
         />
       </ReactFlow>
 

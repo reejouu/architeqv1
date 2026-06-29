@@ -129,7 +129,7 @@ export default function CanvasPage() {
                 position: "fixed",
                 inset: 0,
                 overflow: "hidden",
-                background: "var(--neo-bg, #f3f3f2)",
+                background: "#ffffff",
                 fontFamily: "'Inter', sans-serif",
             }}
         >
@@ -158,35 +158,15 @@ export default function CanvasPage() {
             <button
                 onClick={() => loadGraph(testGraph)}
                 title="Load testGraph.json"
+                className="btn-primary"
                 style={{
                     position: "fixed",
                     bottom: 60,
                     right: 16,
                     zIndex: 100,
-                    height: 38,
-                    padding: "0 18px",
-                    border: "2px solid #2c336c",
-                    background: "#c78caf",
-                    color: "#2c336c",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    boxShadow: "4px 4px 0px 0px #2c336c",
-                    fontFamily: "'Inter', sans-serif",
-                    transition: "all 150ms",
-                }}
-                onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.background = "#bf979e";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "6px 6px 0px 0px #2c336c";
-                    (e.currentTarget as HTMLElement).style.transform = "translate(-2px, -2px)";
-                }}
-                onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.background = "#c78caf";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "4px 4px 0px 0px #2c336c";
-                    (e.currentTarget as HTMLElement).style.transform = "translate(0px, 0px)";
                 }}
             >
-                ⚡ Load Test Graph
+                TEST GRAPH
             </button>
 
             {/* Modals & overlays */}
@@ -207,9 +187,9 @@ export default function CanvasPage() {
                         pointerEvents: "none",
                         height: 32,
                         borderRadius: 6,
-                        border: "1.5px solid #2c336c",
-                        background: "#f3f3f2",
-                        boxShadow: "2px 2px 0px 0px #2c336c",
+                        border: "2px solid var(--ink)",
+                        background: "var(--white)",
+                        boxShadow: "2px 2px 0px 0px var(--ink)",
                         display: "flex",
                         alignItems: "center",
                         gap: 6,
@@ -220,7 +200,7 @@ export default function CanvasPage() {
                     <span style={{ color: NODE_TYPES_CONFIG[draggedPaletteType].color, flexShrink: 0, display: "flex", alignItems: "center" }}>
                         {cloneElement(NODE_ICONS[NODE_TYPES_CONFIG[draggedPaletteType].icon] as ReactElement<any>, { width: 12, height: 12, strokeWidth: 2.5 })}
                     </span>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: "#2c336c" }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "var(--ink)" }}>
                         {NODE_TYPES_CONFIG[draggedPaletteType].label}
                     </span>
                 </div>

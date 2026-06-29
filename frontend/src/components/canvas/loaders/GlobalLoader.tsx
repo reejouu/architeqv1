@@ -19,31 +19,31 @@ export default function GlobalLoader() {
             justifyContent: "center",
         }}>
             <div style={{
-                background: "#f3f3f2",
-                border: "4px solid #2c336c",
+                background: "var(--white)",
+                border: "4px solid var(--ink)",
                 borderRadius: 0,
                 padding: "32px 48px",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 24,
-                boxShadow: "12px 12px 0px 0px #2c336c",
+                boxShadow: "12px 12px 0px 0px var(--ink)",
             }}>
                 <div className="sand-dial" style={{
                     width: 60,
                     height: 60,
-                    border: "4px solid #2c336c",
-                    borderTopColor: "#c78caf",
-                    borderBottomColor: "#c78caf",
+                    border: "4px solid var(--ink)",
+                    borderTopColor: "var(--accent)",
+                    borderBottomColor: "var(--accent)",
                     borderRadius: "50%",
                     animation: "sandDial 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite",
-                    boxShadow: "4px 4px 0px 0px #2c336c",
+                    boxShadow: "4px 4px 0px 0px var(--ink)",
                 }} />
 
                 <h2 style={{
                     fontSize: 20,
                     fontWeight: 800,
-                    color: "#2c336c",
+                    color: "var(--ink)",
                     margin: 0,
                     animation: "pulseText 1.5s infinite"
                 }}>

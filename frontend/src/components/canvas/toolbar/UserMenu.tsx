@@ -42,18 +42,20 @@ export default function UserMenu() {
                     width: 30,
                     height: 30,
                     borderRadius: "50%",
-                    border: "2px solid #2c336c",
-                    background: "#c78caf",
-                    color: "#2c336c",
+                    border: "1.5px solid var(--ink)",
+                    background: "var(--accent)",
+                    color: "#ffffff",
                     fontSize: 13,
                     fontWeight: 800,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "2px 2px 0px 0px #2c336c",
                     flexShrink: 0,
+                    transition: "background 150ms",
                 }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#8F4766")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--accent)")}
             >
                 {initial}
             </button>
@@ -65,9 +67,9 @@ export default function UserMenu() {
                         top: "100%",
                         right: 0,
                         marginTop: 8,
-                        background: "#f3f3f2",
-                        border: "2px solid #2c336c",
-                        boxShadow: "4px 4px 0px 0px #2c336c",
+                        background: "var(--white)",
+                        border: "2px solid var(--ink)",
+                        boxShadow: "4px 4px 0px 0px var(--ink)",
                         zIndex: 1000,
                         minWidth: 160,
                     }}
@@ -78,7 +80,7 @@ export default function UserMenu() {
                             borderBottom: "1px solid rgba(44,51,108,0.15)",
                             fontSize: 12,
                             fontWeight: 700,
-                            color: "#2c336c",
+                            color: "var(--ink)",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -96,10 +98,10 @@ export default function UserMenu() {
                             border: "none",
                             fontSize: 12,
                             fontWeight: 700,
-                            color: "#2c336c",
+                            color: "var(--ink)",
                             cursor: "pointer",
                         }}
-                        onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#ddb9ac")}
+                        onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--cream)")}
                         onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
                     >
                         Log out

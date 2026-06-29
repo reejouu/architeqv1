@@ -26,15 +26,17 @@ const MenuItem = ({
             gap: 10,
             fontSize: 12,
             fontWeight: 700,
-            color: danger ? "#bf3d4a" : "#2c336c",
+            color: danger ? "#bf3d4a" : "var(--ink)",
             cursor: "pointer",
             transition: "background 100ms",
         }}
         onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = danger ? "#e0707a" : "#ddb9ac";
+            (e.currentTarget as HTMLElement).style.background = danger ? "#e0707a" : "var(--green)";
+            (e.currentTarget as HTMLElement).style.color = "#ffffff";
         }}
         onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.background = "transparent";
+            (e.currentTarget as HTMLElement).style.color = danger ? "#bf3d4a" : "var(--ink)";
         }}
     >
         <span style={{ flexShrink: 0, display: "flex" }}>{icon}</span>
@@ -44,7 +46,7 @@ const MenuItem = ({
 );
 
 const Separator = () => (
-    <div style={{ height: 2, background: "#2c336c", opacity: 0.15, margin: "4px 0" }} />
+    <div style={{ height: 2, background: "var(--ink)", opacity: 0.15, margin: "4px 0" }} />
 );
 
 export default function ContextMenu() {
@@ -91,10 +93,10 @@ export default function ContextMenu() {
                 left: contextMenu.x,
                 top: contextMenu.y,
                 width: 200,
-                background: "#f3f3f2",
-                border: "2px solid #2c336c",
+                background: "var(--white)",
+                border: "2px solid var(--ink)",
                 padding: 4,
-                boxShadow: "4px 4px 0px 0px #2c336c",
+                boxShadow: "4px 4px 0px 0px var(--ink)",
                 zIndex: 300,
             }}
             onClick={(e) => e.stopPropagation()}

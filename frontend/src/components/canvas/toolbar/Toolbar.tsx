@@ -35,29 +35,35 @@ const ToolButton = ({
     title={title}
     onClick={onClick}
     style={{
-      width: 32,
-      height: 32,
-      borderRadius: 6,
+      width: 36,
+      height: 36,
+      borderRadius: 0,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: active ? "rgba(255,255,255,0.25)" : "transparent",
-      border: active
-        ? "1px solid rgba(255,255,255,0.4)"
-        : "1px solid transparent",
-      color: "#f3f3f2",
+      background: active ? "var(--green)" : "transparent",
+      border: active ? "2px solid var(--ink)" : "2px solid transparent",
+      boxShadow: active ? "2px 2px 0px 0px var(--ink)" : "none",
+      color: active ? "#fff" : "var(--white)",
       cursor: "pointer",
-      transition: "all 150ms",
+      transition: "none",
     }}
     onMouseEnter={(e) => {
       if (!active) {
-        (e.currentTarget as HTMLElement).style.background =
-          "rgba(255,255,255,0.15)";
+        (e.currentTarget as HTMLElement).style.background = "var(--white)";
+        (e.currentTarget as HTMLElement).style.border = "2px solid var(--ink)";
+        (e.currentTarget as HTMLElement).style.color = "var(--ink)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "2px 2px 0px 0px var(--ink)";
+        (e.currentTarget as HTMLElement).style.transform = "translate(-1px, -1px)";
       }
     }}
     onMouseLeave={(e) => {
       if (!active) {
         (e.currentTarget as HTMLElement).style.background = "transparent";
+        (e.currentTarget as HTMLElement).style.border = "2px solid transparent";
+        (e.currentTarget as HTMLElement).style.color = "var(--white)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "none";
+        (e.currentTarget as HTMLElement).style.transform = "none";
       }
     }}
   >
@@ -161,10 +167,6 @@ export default function Toolbar() {
     }
   }
 
-  const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(projectName);
-  const [nameHovered, setNameHovered] = useState(false);
-
   const [arrowMenuOpen, setArrowMenuOpen] = useState(false);
   const [fontFamilyMenuOpen, setFontFamilyMenuOpen] = useState(false);
 
@@ -198,12 +200,6 @@ export default function Toolbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const handleNameSave = () => {
-    setEditingName(false);
-    const trimmed = nameInput.trim();
-    if (trimmed && trimmed !== projectName) renameProject(trimmed);
-  };
 
   const handleSaveClick = () => {
     if (projectName === DEFAULT_PROJECT_NAME) {
@@ -256,8 +252,8 @@ export default function Toolbar() {
         right: 0,
         height: 64,
         zIndex: 100,
-        background: "#636798",
-        borderBottom: "3px solid #2c336c",
+        background: "var(--purple)",
+        borderBottom: "2px solid var(--ink)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -284,7 +280,7 @@ export default function Toolbar() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#f3f3f2",
+            color: "var(--white)",
             background: "transparent",
             cursor: "pointer",
             transition: "all 150ms",
@@ -294,7 +290,7 @@ export default function Toolbar() {
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.background =
               "rgba(255,255,255,0.15)";
-            (e.currentTarget as HTMLElement).style.color = "#f3f3f2";
+            (e.currentTarget as HTMLElement).style.color = "var(--white)";
             (e.currentTarget as HTMLElement).style.border =
               "2px solid rgba(255,255,255,0.3)";
             (e.currentTarget as HTMLElement).style.boxShadow = "none";
@@ -302,7 +298,7 @@ export default function Toolbar() {
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.background = "transparent";
-            (e.currentTarget as HTMLElement).style.color = "#f3f3f2";
+            (e.currentTarget as HTMLElement).style.color = "var(--white)";
             (e.currentTarget as HTMLElement).style.border =
               "2px solid transparent";
             (e.currentTarget as HTMLElement).style.boxShadow = "none";
@@ -335,107 +331,15 @@ export default function Toolbar() {
           <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
             /
           </span>
-          {editingName ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <input
-                autoFocus
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                onBlur={handleNameSave}
-                onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "#2c336c",
-                  background: "#f3f3f2",
-                  border: "2px solid #2c336c",
-                  boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
-                  outline: "none",
-                  padding: "2px 6px",
-                  width: Math.max(100, nameInput.length * 8 + 12),
-                }}
-              />
-              <button
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleNameSave();
-                }}
-                style={{
-                  height: 24,
-                  padding: "0 10px",
-                  border: "2px solid #2c336c",
-                  background: "#c78caf",
-                  color: "#2c336c",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
-                }}
-              >
-                Save
-              </button>
-            </div>
-          ) : (
-            <div
-              onMouseEnter={() => setNameHovered(true)}
-              onMouseLeave={() => setNameHovered(false)}
-              style={{ display: "flex", alignItems: "center", gap: 4 }}
-            >
-              <span
-                onClick={() => {
-                  setNameInput(projectName);
-                  setEditingName(true);
-                }}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "#f3f3f2",
-                  cursor: "text",
-                }}
-              >
-                {projectName}
-              </span>
-              <button
-                onClick={() => {
-                  setNameInput(projectName);
-                  setEditingName(true);
-                }}
-                title="Rename project"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "transparent",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                  color: "rgba(255,255,255,0.6)",
-                  opacity: nameHovered ? 1 : 0,
-                  transition: "opacity 150ms",
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </button>
-            </div>
-          )}
-
-          {/* Unsaved dot */}
-          {hasUnsavedChanges && (
-            <div
-              title="Unsaved changes"
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 0,
-                background: "#c78caf",
-                border: "1px solid #2c336c",
-                flexShrink: 0,
-              }}
-            />
-          )}
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "var(--white)",
+            }}
+          >
+            {projectName}
+          </span>
         </div>
       </div>
 
@@ -498,14 +402,14 @@ export default function Toolbar() {
                   top: "100%",
                   left: 0,
                   marginTop: 8,
-                  background: "#f3f3f2",
-                  border: "2px solid #2c336c",
+                  background: "var(--white)",
+                  border: "2px solid var(--ink)",
                   borderRadius: 0,
                   padding: 4,
                   display: "flex",
                   flexDirection: "column",
                   gap: 2,
-                  boxShadow: "4px 4px 0px 0px #2c336c",
+                  boxShadow: "4px 4px 0px 0px var(--ink)",
                   zIndex: 1000,
                   minWidth: 100,
                 }}
@@ -523,9 +427,9 @@ export default function Toolbar() {
                       height: 32,
                       padding: "0 10px",
                       borderRadius: 0,
-                      border: edgeStyle === style ? "2px solid #2c336c" : "2px solid transparent",
-                      background: edgeStyle === style ? "#2c336c" : "transparent",
-                      color: edgeStyle === style ? "#f3f3f2" : "#2c336c",
+                      border: edgeStyle === style ? "2px solid var(--ink)" : "2px solid transparent",
+                      background: edgeStyle === style ? "var(--ink)" : "transparent",
+                      color: edgeStyle === style ? "var(--white)" : "var(--ink)",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -626,14 +530,14 @@ export default function Toolbar() {
                   top: "100%",
                   left: 0,
                   marginTop: 8,
-                  background: "#f3f3f2",
-                  border: "2px solid #2c336c",
+                  background: "var(--white)",
+                  border: "2px solid var(--ink)",
                   borderRadius: 0,
                   padding: 4,
                   display: "flex",
                   flexDirection: "column",
                   gap: 2,
-                  boxShadow: "4px 4px 0px 0px #2c336c",
+                  boxShadow: "4px 4px 0px 0px var(--ink)",
                   zIndex: 1000,
                   minWidth: 120,
                 }}
@@ -656,9 +560,9 @@ export default function Toolbar() {
                       height: 34,
                       padding: "0 10px",
                       borderRadius: 0,
-                      border: fontFamily === id ? "2px solid #2c336c" : "2px solid transparent",
-                      background: fontFamily === id ? "#2c336c" : "transparent",
-                      color: fontFamily === id ? "#f3f3f2" : "#2c336c",
+                      border: fontFamily === id ? "2px solid var(--ink)" : "2px solid transparent",
+                      background: fontFamily === id ? "var(--ink)" : "transparent",
+                      color: fontFamily === id ? "var(--white)" : "var(--ink)",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -731,7 +635,7 @@ export default function Toolbar() {
                   cursor: "pointer",
                   border:
                     nodeColor === color
-                      ? "3px solid #636798"
+                      ? "3px solid var(--purple)"
                       : "2px solid rgba(255,255,255,0.4)",
                   boxShadow: nodeColor === color ? `0 0 0 2px #ffffff` : "none",
                   transition: "all 150ms",
@@ -760,163 +664,137 @@ export default function Toolbar() {
       >
         {/* Collaboration controls */}
         <div ref={collabRef} style={{ position: "relative", display: "flex", alignItems: "center", gap: 6 }}>
-          {/* Connected user avatars */}
-          {isInRoom && others.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", marginRight: 4 }}>
-              {others.slice(0, 5).map((user) => {
-                const info = user.info as { name: string; color: string } | undefined;
-                if (!info) return null;
-                const initials = info.name
-                  .split(" ")
-                  .map((w: string) => w[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2);
-                return (
-                  <div
-                    key={user.connectionId}
-                    title={info.name}
-                    style={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: "50%",
-                      background: info.color,
-                      color: "#fff",
-                      fontSize: 10,
-                      fontWeight: 800,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: "2px solid #636798",
-                      marginLeft: -6,
-                      cursor: "default",
-                    }}
-                  >
-                    {initials}
-                  </div>
-                );
-              })}
-              {others.length > 5 && (
-                <div
+
+          <button
+            onClick={() => setCollabMenuOpen(!collabMenuOpen)}
+            style={{
+              height: 32,
+              padding: "0 14px",
+              borderRadius: 0,
+              border: isInRoom ? "2px solid var(--ink)" : "2px solid rgba(255,255,255,0.3)",
+              background: isInRoom ? "var(--green)" : "rgba(255,255,255,0.1)",
+              color: "var(--white)",
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              boxShadow: isInRoom ? "2px 2px 0px 0px var(--ink)" : "none",
+              transition: "all 150ms",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = isInRoom
+                ? "#3D634C"
+                : "rgba(255,255,255,0.2)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = isInRoom
+                ? "var(--green)"
+                : "rgba(255,255,255,0.1)";
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            {isInRoom ? "In Room" : "Collaborate"}
+          </button>
+
+          {/* Dropdown for an active room — code + leave */}
+          {collabMenuOpen && isInRoom && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                right: 0,
+                marginTop: 8,
+                background: "var(--white)",
+                border: "2px solid var(--ink)",
+                borderRadius: 0,
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                boxShadow: "4px 4px 0px 0px var(--ink)",
+                zIndex: 1000,
+                minWidth: 220,
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--purple)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Room Code
+                </span>
+                <button
+                  onClick={() => {
+                    if (roomId) {
+                      navigator.clipboard.writeText(roomId);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }
+                  }}
+                  title="Copy room code"
                   style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.2)",
-                    color: "#f3f3f2",
-                    fontSize: 9,
-                    fontWeight: 800,
+                    height: 36,
+                    padding: "0 10px",
+                    border: "2px solid var(--ink)",
+                    background: "var(--cream)",
+                    color: "var(--ink)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: "2px solid #636798",
-                    marginLeft: -6,
+                    gap: 6,
+                    fontFamily: "monospace",
+                    boxShadow: "2px 2px 0px 0px var(--ink)",
+                    transition: "all 150ms",
                   }}
                 >
-                  +{others.length - 5}
-                </div>
-              )}
-            </div>
-          )}
+                  {copied ? "✓ Copied" : roomId?.replace("architeq-", "")}
+                </button>
+              </div>
 
-          {!isInRoom ? (
-            <button
-              onClick={() => setCollabMenuOpen(!collabMenuOpen)}
-              style={{
-                height: 32,
-                padding: "0 14px",
-                borderRadius: 0,
-                border: "2px solid rgba(255,255,255,0.3)",
-                background: "rgba(255,255,255,0.1)",
-                color: "#f3f3f2",
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                boxShadow: "none",
-                transition: "all 150ms",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.2)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              Collaborate
-            </button>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              {/* Room code display + copy */}
+              <div style={{ width: "100%", height: 1, background: "#ddd" }} />
+
               <button
                 onClick={() => {
-                  if (roomId) {
-                    navigator.clipboard.writeText(roomId);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }
+                  leaveRoom();
+                  setCollabMenuOpen(false);
                 }}
-                title="Copy room code"
-                style={{
-                  height: 32,
-                  padding: "0 10px",
-                  borderRadius: 0,
-                  border: "2px solid rgba(255,255,255,0.3)",
-                  background: "rgba(255,255,255,0.1)",
-                  color: "#f3f3f2",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                  fontFamily: "monospace",
-                  transition: "all 150ms",
-                }}
-              >
-                {copied ? "✓ Copied" : roomId?.replace("architeq-", "")}
-              </button>
-
-              {/* Leave button */}
-              <button
-                onClick={leaveRoom}
                 title="Leave room"
                 style={{
-                  height: 32,
-                  padding: "0 10px",
-                  borderRadius: 0,
-                  border: "2px solid rgba(239,68,68,0.5)",
-                  background: "rgba(239,68,68,0.15)",
-                  color: "#fca5a5",
-                  fontSize: 12,
+                  height: 36,
+                  padding: "0 14px",
+                  border: "2px solid var(--ink)",
+                  background: "var(--accent)",
+                  color: "#ffffff",
+                  fontSize: 13,
                   fontWeight: 700,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: 4,
+                  justifyContent: "center",
+                  gap: 6,
+                  boxShadow: "2px 2px 0px 0px var(--ink)",
                   transition: "all 150ms",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.3)";
+                  (e.currentTarget as HTMLElement).style.background = "#8F4766";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.15)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--accent)";
                 }}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
-                Leave
+                Leave Room
               </button>
             </div>
           )}
@@ -929,14 +807,14 @@ export default function Toolbar() {
                 top: "100%",
                 right: 0,
                 marginTop: 8,
-                background: "#f3f3f2",
-                border: "2px solid #2c336c",
+                background: "var(--white)",
+                border: "2px solid var(--ink)",
                 borderRadius: 0,
                 padding: 16,
                 display: "flex",
                 flexDirection: "column",
                 gap: 12,
-                boxShadow: "4px 4px 0px 0px #2c336c",
+                boxShadow: "4px 4px 0px 0px var(--ink)",
                 zIndex: 1000,
                 minWidth: 220,
               }}
@@ -949,9 +827,9 @@ export default function Toolbar() {
                 style={{
                   height: 36,
                   padding: "0 14px",
-                  border: "2px solid #2c336c",
-                  background: "#2c336c",
-                  color: "#f3f3f2",
+                  border: "2px solid var(--ink)",
+                  background: "var(--accent)",
+                  color: "#ffffff",
                   fontSize: 13,
                   fontWeight: 700,
                   cursor: "pointer",
@@ -959,16 +837,14 @@ export default function Toolbar() {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 6,
-                  boxShadow: "3px 3px 0px 0px #2c336c",
+                  boxShadow: "3px 3px 0px 0px var(--ink)",
                   transition: "all 150ms",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "#c78caf";
-                  (e.currentTarget as HTMLElement).style.color = "#2c336c";
+                  (e.currentTarget as HTMLElement).style.background = "#8F4766";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "#2c336c";
-                  (e.currentTarget as HTMLElement).style.color = "#f3f3f2";
+                  (e.currentTarget as HTMLElement).style.background = "var(--accent)";
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -980,7 +856,7 @@ export default function Toolbar() {
               <div style={{ width: "100%", height: 1, background: "#ddd" }} />
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#636798", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--purple)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   Join a Room
                 </span>
                 <div style={{ display: "flex", gap: 4 }}>
@@ -998,9 +874,9 @@ export default function Toolbar() {
                       flex: 1,
                       height: 32,
                       padding: "0 8px",
-                      border: "2px solid #2c336c",
+                      border: "2px solid var(--ink)",
                       background: "#fff",
-                      color: "#2c336c",
+                      color: "var(--ink)",
                       fontSize: 12,
                       fontWeight: 600,
                       fontFamily: "monospace",
@@ -1016,9 +892,9 @@ export default function Toolbar() {
                     style={{
                       height: 32,
                       padding: "0 10px",
-                      border: "2px solid #2c336c",
-                      background: joinInput.trim() ? "#636798" : "#ccc",
-                      color: "#f3f3f2",
+                      border: "2px solid var(--ink)",
+                      background: joinInput.trim() ? "var(--purple)" : "#ccc",
+                      color: "var(--white)",
                       fontSize: 12,
                       fontWeight: 700,
                       cursor: joinInput.trim() ? "pointer" : "not-allowed",
@@ -1039,9 +915,9 @@ export default function Toolbar() {
             height: 32,
             padding: "0 14px",
             borderRadius: 0,
-            border: "2px solid #2c336c",
-            background: "#c78caf",
-            color: "#2c336c",
+            border: "2px solid var(--ink)",
+            background: "var(--accent)",
+            color: "#ffffff",
             boxShadow: "3px 3px 0px 0px rgba(0,0,0,0.25)",
             fontSize: 13,
             fontWeight: 700,
@@ -1052,14 +928,14 @@ export default function Toolbar() {
             transition: "all 150ms",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "#bf979e";
+            (e.currentTarget as HTMLElement).style.background = "#8F4766";
             (e.currentTarget as HTMLElement).style.transform =
               "translate(-1px, -1px)";
             (e.currentTarget as HTMLElement).style.boxShadow =
               "5px 5px 0px 0px rgba(0,0,0,0.25)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "#c78caf";
+            (e.currentTarget as HTMLElement).style.background = "var(--accent)";
             (e.currentTarget as HTMLElement).style.transform =
               "translate(0px, 0px)";
             (e.currentTarget as HTMLElement).style.boxShadow =
@@ -1084,7 +960,7 @@ export default function Toolbar() {
           style={{
             width: 2,
             height: 24,
-            background: "#2c336c",
+            background: "var(--ink)",
             margin: "0 8px",
           }}
         />
@@ -1094,16 +970,29 @@ export default function Toolbar() {
           disabled={isInRoom && !isHost}
           title={isInRoom && !isHost ? "Only the host can save" : "Save"}
           style={{
+            height: 32,
+            padding: "0 14px",
             fontSize: 12,
             fontWeight: 700,
-            color: isInRoom && !isHost ? "rgba(255,255,255,0.3)" : "#f3f3f2",
-            background: "transparent",
-            border: "none",
+            color: isInRoom && !isHost ? "rgba(255,255,255,0.3)" : "var(--white)",
+            background: "rgba(255,255,255,0.1)",
+            border: "2px solid rgba(255,255,255,0.3)",
+            borderRadius: 9999,
             cursor: isInRoom && !isHost ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: 6,
-            minWidth: 60,
+            minWidth: 70,
+            transition: "all 150ms",
+          }}
+          onMouseEnter={(e) => {
+            if (!(isInRoom && !isHost)) {
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.2)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
           }}
         >
           {saveStatus === "saving" && (
@@ -1140,6 +1029,64 @@ export default function Toolbar() {
           )}
           {saveStatus === "idle" && "Save"}
         </button>
+
+        {isInRoom && others.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", marginRight: -10 }}>
+            {others.slice(0, 5).map((user, i) => {
+              const info = user.info as { name: string; color: string } | undefined;
+              if (!info) return null;
+              const initials = info.name
+                .split(" ")
+                .map((w: string) => w[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2);
+              return (
+                <div
+                  key={user.connectionId}
+                  title={info.name}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: "50%",
+                    background: info.color,
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1.5px solid var(--ink)",
+                    marginLeft: i === 0 ? 0 : -10,
+                    cursor: "default",
+                  }}
+                >
+                  {initials}
+                </div>
+              );
+            })}
+            {others.length > 5 && (
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.2)",
+                  color: "var(--white)",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1.5px solid var(--ink)",
+                  marginLeft: -10,
+                }}
+              >
+                +{others.length - 5}
+              </div>
+            )}
+          </div>
+        )}
 
         <UserMenu />
       </div>
