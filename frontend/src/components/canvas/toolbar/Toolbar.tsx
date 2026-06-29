@@ -336,24 +336,45 @@ export default function Toolbar() {
             /
           </span>
           {editingName ? (
-            <input
-              autoFocus
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              onBlur={handleNameSave}
-              onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#2c336c",
-                background: "#f3f3f2",
-                border: "2px solid #2c336c",
-                boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
-                outline: "none",
-                padding: "2px 6px",
-                width: Math.max(100, nameInput.length * 8 + 12),
-              }}
-            />
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                autoFocus
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onBlur={handleNameSave}
+                onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#2c336c",
+                  background: "#f3f3f2",
+                  border: "2px solid #2c336c",
+                  boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
+                  outline: "none",
+                  padding: "2px 6px",
+                  width: Math.max(100, nameInput.length * 8 + 12),
+                }}
+              />
+              <button
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleNameSave();
+                }}
+                style={{
+                  height: 24,
+                  padding: "0 10px",
+                  border: "2px solid #2c336c",
+                  background: "#c78caf",
+                  color: "#2c336c",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
+                }}
+              >
+                Save
+              </button>
+            </div>
           ) : (
             <div
               onMouseEnter={() => setNameHovered(true)}

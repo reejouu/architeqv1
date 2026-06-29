@@ -322,7 +322,6 @@ export const useCanvasStore = create<WithLiveblocks<CanvasState>>()(
             rightPanelOpen: false,
             hasUnsavedChanges: markUnsaved,
         });
-        setTimeout(() => set(s => ({ fitViewTrigger: s.fitViewTrigger + 1 })), 100);
     },
 
     triggerSave: async () => {

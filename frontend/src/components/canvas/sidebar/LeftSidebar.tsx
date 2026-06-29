@@ -356,19 +356,40 @@ export default function LeftSidebar() {
                                 <div style={{ padding: "10px 10px 0" }}>
                                     {/* Name card */}
                                     {editingName ? (
-                                        <input
-                                            autoFocus
-                                            value={nameInput}
-                                            onChange={(e) => setNameInput(e.target.value)}
-                                            onBlur={handleNameSave}
-                                            onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
-                                            style={{
-                                                width: "100%", fontSize: 13, fontWeight: 800, color: "#2c336c",
-                                                background: "#ffffff", border: "2px solid #2c336c",
-                                                boxShadow: "2px 2px 0px 0px #2c336c", outline: "none",
-                                                padding: "8px 10px", boxSizing: "border-box",
-                                            }}
-                                        />
+                                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                            <input
+                                                autoFocus
+                                                value={nameInput}
+                                                onChange={(e) => setNameInput(e.target.value)}
+                                                onBlur={handleNameSave}
+                                                onKeyDown={(e) => e.key === "Enter" && handleNameSave()}
+                                                style={{
+                                                    flex: 1, minWidth: 0, fontSize: 13, fontWeight: 800, color: "#2c336c",
+                                                    background: "#ffffff", border: "2px solid #2c336c",
+                                                    boxShadow: "2px 2px 0px 0px #2c336c", outline: "none",
+                                                    padding: "8px 10px", boxSizing: "border-box",
+                                                }}
+                                            />
+                                            <button
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    handleNameSave();
+                                                }}
+                                                style={{
+                                                    height: 35,
+                                                    padding: "0 10px",
+                                                    border: "2px solid #2c336c",
+                                                    background: "#c78caf",
+                                                    color: "#2c336c",
+                                                    fontSize: 12,
+                                                    fontWeight: 700,
+                                                    cursor: "pointer",
+                                                    boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.3)",
+                                                }}
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
                                     ) : (
                                         <div
                                             onClick={() => { setNameInput(projectName); setEditingName(true); }}
@@ -511,7 +532,7 @@ export default function LeftSidebar() {
                                                                     opacity: versionMutationPending && !isBusy ? 0.6 : 1,
                                                                 }}
                                                             >
-                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={isBusy ? "animate-spin" : ""}>
                                                                     <polyline points="1 4 1 10 7 10" />
                                                                     <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
                                                                 </svg>
