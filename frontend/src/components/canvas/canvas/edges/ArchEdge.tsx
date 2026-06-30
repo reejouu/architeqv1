@@ -46,6 +46,61 @@ export default function ArchEdge({
 
   const laneY = data?.laneY as number | undefined;
 
+  // ── 0. ELK route (preferred): draw the orthogonal polyline ELK computed.
+  //        ELK points share the canvas/flow coordinate space, so they render directly.
+  const elkPoints = data?.points as { x: number; y: number }[] | undefined;
+  if (elkPoints && elkPoints.length >= 2) {
+    // Anchor the endpoints to React Flow's LIVE handle positions (which always track
+    // the actual rendered node) plus the per-edge offset, so arrows can never land in
+    // blank space even if the precomputed absolute coords drift. ELK's interior bends
+    // (re-aligned to the anchored x) still shape the route.
+    const sx = sourceX + (exitOffset?.dx ?? 0);
+    const tx = targetX + (entryOffset?.dx ?? 0);
+    const interior = elkPoints.slice(1, -1).map((p) => ({ ...p }));
+    if (interior.length) {
+      interior[0].x = sx;
+      interior[interior.length - 1].x = tx;
+    }
+    const anchored = [{ x: sx, y: sourceY }, ...interior, { x: tx, y: targetY }];
+    const path = buildOrthogonalPath(anchored, 8);
+    return (
+      <>
+        <defs>
+          <marker
+            id={`archArrowSelected-${id}`}
+            viewBox="-10 -10 20 20"
+            refX="0"
+            refY="0"
+            markerWidth="12.5"
+            markerHeight="12.5"
+            markerUnits="strokeWidth"
+            orient="auto-start-reverse"
+          >
+            <polyline
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points="-5,-4 0,0 -5,4 -5,-4"
+              style={{ stroke: "#a8567e", fill: "#a8567e", strokeWidth: 1 }}
+            />
+          </marker>
+        </defs>
+        <BaseEdge
+          id={id}
+          path={path}
+          markerEnd={selected ? `url(#archArrowSelected-${id})` : markerEnd}
+          style={{
+            stroke: strokeColor,
+            strokeWidth: strokeWidth,
+            strokeOpacity: 1,
+            strokeLinecap: "round",
+            strokeDasharray: strokeDasharray,
+            fill: "none",
+          }}
+        />
+      </>
+    );
+  }
+
   // ── 1b. Renderer-lane path: draw the whole mid-run at a derived corridor y so
   //         independent edges in the same corridor never overlap (no waypoints added).
   if (laneY != null) {

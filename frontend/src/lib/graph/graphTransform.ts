@@ -1,6 +1,7 @@
 import type { Node, Edge } from "@xyflow/react";
 import { MarkerType } from "@xyflow/react";
-import { computeLayout, type InputNode, type InputEdge } from "./engine";
+import { type InputNode, type InputEdge } from "./engine";
+import { computeElkLayout } from "./elkLayout";
 
 // ─── AI Agent JSON schema ─────────────────────────────────────────────────────
 
@@ -82,10 +83,10 @@ export const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
  *
  * Falls back to Dagre for nodes without spatial metadata.
  */
-export function transformGraph(
+export async function transformGraph(
     raw: RawGraph,
     direction: "TB" | "LR" = "TB"
-): { nodes: Node[]; edges: Edge[] } {
+): Promise<{ nodes: Node[]; edges: Edge[] }> {
 
     // ── Pre-process raw nodes to inject global data ──
     const enrichedNodes = raw.nodes.map(n => {
@@ -140,7 +141,7 @@ export function transformGraph(
         lane: e.lane,
     }));
 
-    const layout = computeLayout(inputNodes, inputEdges);
+    const layout = await computeElkLayout(inputNodes, inputEdges);
 
     // Convert to React Flow format
     const rfNodes: Node[] = layout.nodes.map(n => ({
@@ -187,6 +188,7 @@ export function transformGraph(
                 entryPort,
                 routingType: le.type,
                 laneY: (le.data as any).laneY,
+                points: (le.data as any).points,
             },
         };
     });
